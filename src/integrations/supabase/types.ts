@@ -14,7 +14,245 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cities: {
+        Row: {
+          active: boolean
+          boundary_source_id: string | null
+          city_code: string
+          created_at: string
+          h3_resolution: number
+          ibge_code: string
+          name: string
+          service_radius_m: number
+          state: string
+          transit_radius_m: number
+        }
+        Insert: {
+          active?: boolean
+          boundary_source_id?: string | null
+          city_code: string
+          created_at?: string
+          h3_resolution?: number
+          ibge_code: string
+          name: string
+          service_radius_m?: number
+          state: string
+          transit_radius_m?: number
+        }
+        Update: {
+          active?: boolean
+          boundary_source_id?: string | null
+          city_code?: string
+          created_at?: string
+          h3_resolution?: number
+          ibge_code?: string
+          name?: string
+          service_radius_m?: number
+          state?: string
+          transit_radius_m?: number
+        }
+        Relationships: []
+      }
+      discovered_layers: {
+        Row: {
+          approved: boolean
+          city_code: string
+          count_error: string | null
+          discovered_at: string
+          endpoint_url: string
+          feature_count: number | null
+          id: string
+          layer_name: string
+          matched_terms: string[]
+          title: string | null
+        }
+        Insert: {
+          approved?: boolean
+          city_code: string
+          count_error?: string | null
+          discovered_at?: string
+          endpoint_url: string
+          feature_count?: number | null
+          id?: string
+          layer_name: string
+          matched_terms?: string[]
+          title?: string | null
+        }
+        Update: {
+          approved?: boolean
+          city_code?: string
+          count_error?: string | null
+          discovered_at?: string
+          endpoint_url?: string
+          feature_count?: number | null
+          id?: string
+          layer_name?: string
+          matched_terms?: string[]
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discovered_layers_city_code_fkey"
+            columns: ["city_code"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["city_code"]
+          },
+        ]
+      }
+      run_logs: {
+        Row: {
+          city_code: string | null
+          created_at: string
+          details: Json | null
+          id: number
+          level: string
+          message: string
+          run_id: string | null
+          source_id: string | null
+        }
+        Insert: {
+          city_code?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: number
+          level?: string
+          message: string
+          run_id?: string | null
+          source_id?: string | null
+        }
+        Update: {
+          city_code?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: number
+          level?: string
+          message?: string
+          run_id?: string | null
+          source_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "run_logs_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "runs"
+            referencedColumns: ["run_id"]
+          },
+        ]
+      }
+      runs: {
+        Row: {
+          city_code: string
+          cursor: Json | null
+          finished_at: string | null
+          run_id: string
+          started_at: string
+          status: string
+          step: string
+          summary: Json | null
+        }
+        Insert: {
+          city_code: string
+          cursor?: Json | null
+          finished_at?: string | null
+          run_id?: string
+          started_at?: string
+          status?: string
+          step: string
+          summary?: Json | null
+        }
+        Update: {
+          city_code?: string
+          cursor?: Json | null
+          finished_at?: string | null
+          run_id?: string
+          started_at?: string
+          status?: string
+          step?: string
+          summary?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "runs_city_code_fkey"
+            columns: ["city_code"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["city_code"]
+          },
+        ]
+      }
+      sources: {
+        Row: {
+          approved: boolean
+          category: string | null
+          city_code: string
+          created_at: string
+          endpoint_url: string
+          geometry_hint: string | null
+          layer: string | null
+          name: string
+          notes: string | null
+          protocol: string
+          publisher: string
+          role: string
+          source_id: string
+          subcategory: string | null
+          type_name: string | null
+          updated_at: string
+          verified_at: string | null
+          verified_in_capabilities: boolean | null
+        }
+        Insert: {
+          approved?: boolean
+          category?: string | null
+          city_code: string
+          created_at?: string
+          endpoint_url: string
+          geometry_hint?: string | null
+          layer?: string | null
+          name: string
+          notes?: string | null
+          protocol: string
+          publisher: string
+          role?: string
+          source_id: string
+          subcategory?: string | null
+          type_name?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          verified_in_capabilities?: boolean | null
+        }
+        Update: {
+          approved?: boolean
+          category?: string | null
+          city_code?: string
+          created_at?: string
+          endpoint_url?: string
+          geometry_hint?: string | null
+          layer?: string | null
+          name?: string
+          notes?: string | null
+          protocol?: string
+          publisher?: string
+          role?: string
+          source_id?: string
+          subcategory?: string | null
+          type_name?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          verified_in_capabilities?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sources_city_code_fkey"
+            columns: ["city_code"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["city_code"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
