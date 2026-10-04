@@ -1,24 +1,42 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { SiteShell, Placeholder } from "@/components/SiteShell";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "Access Deserts — São Paulo" },
+      { name: "description", content: "Where population density and social vulnerability coincide with poor access to public services in São Paulo, with data reliability shown." },
+      { property: "og:title", content: "Access Deserts — São Paulo" },
+      { property: "og:description", content: "Spatial analysis of access to essential public services, built on open public data." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+  component: MapPage,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function MapPage() {
+  const { data: sources } = useQuery({
+    queryKey: ["sources-count"],
+    queryFn: async () => {
+      const { data } = await supabase.from("sources").select("source_id, approved, role");
+      return data ?? [];
+    },
+  });
+  const approved = sources?.filter((s) => s.approved).length ?? 0;
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <SiteShell>
+      <section className="mx-auto max-w-7xl px-4 py-10">
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">Live data – no completed run yet</p>
+        <h1 className="mt-2 text-3xl font-semibold">Map</h1>
+        <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
+          The map will appear once the first data run completes (Phase 2). Sources configured: {sources?.length ?? "…"}; approved
+          for use: {approved}.
+        </p>
+        <div className="mt-6"><Placeholder>Map not yet available.</Placeholder></div>
+      </section>
+    </SiteShell>
   );
 }
