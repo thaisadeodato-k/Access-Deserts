@@ -41,10 +41,10 @@ Kept working for now, but new code must not depend on them. Retire only after th
 - Cloud secret `ADMIN_KEY` and the Supabase variables in `.env`.
 
 ## Output data model (per run)
-- `services.geojson` — normalised points: id, source_id, name, category, subcategory, geometry_type, address.
+- `services.geojson` — normalised points: id, source_id, name, category, subcategory, geometry_type, address, included_in_metrics, exclusion_reason. Every source record is present; records without coordinates have `geometry: null`.
 - `hexagons.geojson` — H3 cells (resolution 8, configurable): h3_id, population_est, income_est, vulnerability_score, count_{category}_1km, nearest_{category}_m, transit_within_500m, desert_{category}, desert_count.
 - `districts.json` — district summaries: population, share of population in desert hexagons per category.
-- `quality.json` — per source: fetched_at, record_count, change vs previous run (added/removed), % missing coordinates, % outside city boundary, duplicates flagged, % classified by AI, fields with >20% empty values, suppressed/missing census values, unreachable or internal-only URLs found in metadata, confidence (high/medium/low) and the rule that produced it.
+- `quality.json` — per source: fetched_at, record_count, change vs previous run (added/removed), % missing coordinates, % outside city boundary, duplicates flagged, % classified by AI, fields with >20% empty values, highlighted findings, inclusion rule counts, suppressed/missing census values, unreachable or internal-only URLs found in metadata, confidence (high/medium/low) and the rule that produced it.
 - `run.json` — run_id, timestamps, parameters (thresholds, H3 resolution, desert rule, vulnerability formula, polygon distance method), sources used, errors.
 
 ## Method (default parameters — configurable in `/pipeline/config/params.yaml`)
@@ -54,6 +54,8 @@ Kept working for now, but new code must not depend on them. Retire only after th
 - Vulnerability score: inverse percentile of average household-head income (IBGE V06004).
 - Population and income per hexagon: area-weighted from census tracts.
 - Polygons (parks, squares): distance to nearest edge; fallback to centroid, recorded in run.json.
+- Record inclusion: no record is ever dropped. Each service record carries `included_in_metrics` and `exclusion_reason`; rules live per source in `sources.yaml` (`inclusion_rules`), match counts go to quality.json. Built-in rule: no coordinates → excluded ("missing coordinates"). UBS layer (approved 5 Oct 2026): state-run → included (public service); private → excluded ("private provider"); type "SEM TIPO" → excluded ("missing type, needs review"). Listed on the Method page.
+- Highlighted findings: `highlight_fields` in `sources.yaml` produce computed findings in quality.json (`findings`), cited on the Reliability page and in Limitations. UBS: opening hours (`tx_horario_funcionamento`).
 
 ## Data sources — São Paulo
 Layer names verified in the public GeoSampa WFS GetCapabilities on 4 Oct 2026; all 16 re-verified on 5 Oct 2026 (feature counts recorded in `pipeline/config/sources.yaml`).
