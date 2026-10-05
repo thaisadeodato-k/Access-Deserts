@@ -1,0 +1,25 @@
+# City configuration. Adding a city = adding an entry here plus its sources in sources.yaml.
+
+sp:
+  name: São Paulo
+  state: SP
+  ibge_code: "3550308"
+  native_crs: EPSG:31983        # SIRGAS 2000 / UTM 23S (DefaultCRS of every GeoSampa layer, GetCapabilities 2026-10-05)
+  output_crs: EPSG:4326
+
+  # Plausibility envelope used ONLY to detect CRS / axis-order problems in responses.
+  # Derived from the bbox of geoportal:area_contexto feature cd_identificador_area_contexto=27
+  # ("São Paulo", identical to the union of geoportal:distrito_municipal), EPSG:31983
+  # [313386, 7343738, 360619, 7416133] converted to WGS84 on 2026-10-05.
+  # It is NOT the city boundary and is not used for the "% outside boundary" metric.
+  wgs84_envelope: [-46.8346, -24.0123, -46.3636, -23.3538]   # [min_lon, min_lat, max_lon, max_lat]
+
+  # City boundary for "% outside boundary": not decided yet (Phase 4).
+  # geoportal:area_contexto holds all municipalities of the state (two "São Paulo" features: 27 and 10027).
+  boundary: null
+
+  # Only these hosts may be requested. Hostnames matching internal_host_pattern are never
+  # requested; when found in metadata or data they are logged as a quality issue.
+  allowed_hosts:
+    - wfs.geosampa.prefeitura.sp.gov.br
+  internal_host_pattern: '\.prodam$'

@@ -1,0 +1,21 @@
+# Method parameters (defaults from CLAUDE.md). Every run copies this file into run.json.
+# Phase 2 uses only `wfs` and `quality`; the rest is recorded for later phases.
+
+h3_resolution: 8
+service_threshold_m: 1000          # ≈ 15 min walk from hexagon centre
+transit_threshold_m: 500
+desert_rule: >-
+  population above city median AND zero services of the category within service_threshold_m
+vulnerability_formula: >-
+  inverse percentile of average household-head income (IBGE Census 2022, V06004)
+population_income_method: area-weighted from census tracts
+polygon_distance_method: distance to nearest edge; fallback to centroid (recorded per run)
+
+wfs:
+  page_size: 1000                  # COUNT; paging stops when a page returns fewer features
+  timeout_s: 120
+  retries: 3
+  max_pages: 500                   # safety stop
+
+quality:
+  empty_field_threshold: 0.20      # report fields with more than 20% empty values

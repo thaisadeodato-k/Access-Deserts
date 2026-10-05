@@ -1,0 +1,155 @@
+# Data sources. Only entries with `approved: true` are used by the pipeline.
+#
+# Layer names verified in the public GeoSampa WFS GetCapabilities on 2026-10-05;
+# `features_at_verification` is the RESULTTYPE=hits count on that date.
+#
+# Optional per-source keys:
+#   sort_by:   attribute passed as SORTBY when paging. Needed for layers without a primary key
+#              (the server then rejects STARTINDEX). Must be a field confirmed by DescribeFeatureType.
+#   field_map: maps normalised fields (name, address) to source attributes. Added only after the
+#              source's fields have been reviewed and approved; until then name/address are null.
+
+defaults:
+  city_code: sp
+  publisher: GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)
+  endpoint_url: http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs
+  protocol: wfs
+  approved: false
+
+sources:
+  # ---- Services ----------------------------------------------------------------------------
+  - source_id: sp_geosampa_educacao_rede_publica
+    name: Public primary and secondary schools
+    layer: geoportal:equipamento_educacao_rede_publica
+    role: service
+    category: school
+    subcategory: primary_secondary
+    features_at_verification: 1590
+
+  - source_id: sp_geosampa_educacao_infantil
+    name: Public early-childhood education
+    layer: geoportal:equipamento_educacao_infantil_rede_publica
+    role: service
+    category: school
+    subcategory: early_childhood
+    features_at_verification: 3047
+
+  - source_id: sp_geosampa_educacao_ceu
+    name: CEU (Unified Educational Centres)
+    layer: geoportal:equipamento_educacao_ceu
+    role: service
+    category: school
+    subcategory: ceu
+    features_at_verification: 150
+
+  - source_id: sp_geosampa_saude_ubs
+    name: Basic health units (UBS / health posts / health centres)
+    layer: geoportal:equipamento_saude_ubs_posto_centro
+    role: service
+    category: health_ubs
+    subcategory: null
+    features_at_verification: 483
+    approved: true   # approved 2026-10-05 (Phase 2)
+
+  - source_id: sp_geosampa_cras
+    name: Social assistance reference centres (CRAS)
+    layer: geoportal:centro_referencia_assistencia_social
+    role: service
+    category: cras
+    subcategory: null
+    features_at_verification: 58
+
+  - source_id: sp_geosampa_parque_municipal
+    name: Municipal parks
+    layer: geoportal:pde_parque_municipal
+    role: service
+    category: park_square
+    subcategory: park
+    features_at_verification: 280
+
+  - source_id: sp_geosampa_praca_largo
+    name: Squares and plazas
+    layer: geoportal:GEOSAMPA_v_praca_largo
+    role: service
+    category: park_square
+    subcategory: square
+    features_at_verification: 3830
+
+  - source_id: sp_geosampa_bibliotecas
+    name: Libraries
+    layer: geoportal:equipamento_cultura_bibliotecas
+    role: service
+    category: library
+    subcategory: null
+    features_at_verification: 192
+
+  - source_id: sp_geosampa_espacos_culturais
+    name: Cultural spaces
+    layer: geoportal:equipamento_cultura_espacos_culturais
+    role: service
+    category: culture
+    subcategory: cultural_space
+    features_at_verification: 35
+
+  - source_id: sp_geosampa_museus
+    name: Museums
+    layer: geoportal:equipamento_cultura_museus
+    role: service
+    category: culture
+    subcategory: museum
+    features_at_verification: 167
+
+  - source_id: sp_geosampa_teatro_cinema_show
+    name: Theatres, cinemas and venues
+    layer: geoportal:equipamento_cultura_teatro_cinema_show
+    role: service
+    category: culture
+    subcategory: theatre_cinema
+    features_at_verification: 410
+
+  - source_id: sp_geosampa_estacao_metro
+    name: Metro stations
+    layer: geoportal:estacao_metro
+    role: service
+    category: metro_train
+    subcategory: metro
+    features_at_verification: 94
+    notes: CPTM train stations are a separate layer (geoportal:estacao_trem); not yet approved.
+
+  # ---- Context (never counted as services) ---------------------------------------------------
+  - source_id: sp_geosampa_distrito_municipal
+    name: Municipal districts
+    layer: geoportal:distrito_municipal
+    role: context
+    category: null
+    subcategory: null
+    features_at_verification: 96
+
+  - source_id: sp_geosampa_area_contexto
+    name: Municipalities of São Paulo state (context)
+    layer: geoportal:area_contexto
+    role: context
+    category: null
+    subcategory: null
+    features_at_verification: 1359
+    sort_by: cd_identificador_area_contexto
+    notes: >-
+      Not the city boundary: all municipalities of the state plus ocean and RMSP features.
+      São Paulo appears twice (ids 27 and 10027). Boundary choice pending (Phase 4).
+
+  - source_id: sp_geosampa_corredor_onibus
+    name: Bus corridors (display only)
+    layer: geoportal:corredor_onibus
+    role: context
+    category: null
+    subcategory: null
+    features_at_verification: 45
+
+  # ---- Demand --------------------------------------------------------------------------------
+  - source_id: sp_geosampa_densidade_demografica
+    name: Census tracts 2022 – population density
+    layer: geoportal:densidade_demografica
+    role: demand
+    category: null
+    subcategory: null
+    features_at_verification: 27301
