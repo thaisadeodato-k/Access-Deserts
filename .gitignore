@@ -30,3 +30,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local env overrides (never commit). .env itself stays tracked: Lovable needs it.
+.env.local
+.env.*.local
+
+# bun.lock is the lockfile of record
+package-lock.json
