@@ -1,0 +1,64 @@
+name: Data pipeline
+
+# Manual trigger only (no schedule). Fetches approved sources, writes a new run to
+# public/data/runs/{run_id}/, commits it back, and keeps raw responses as a 90-day artifact.
+on:
+  workflow_dispatch:
+    inputs:
+      city:
+        description: City code from pipeline/config/cities.yaml
+        required: true
+        default: sp
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data-pipeline
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pipeline/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r pipeline/requirements.txt
+
+      - name: Offline tests
+        run: python -m pytest pipeline/tests -q
+
+      - name: Run pipeline
+        id: pipeline
+        run: python -m pipeline.access_deserts.run --city "${{ inputs.city }}"
+
+      - name: Upload raw responses (90 days)
+        if: always() && steps.pipeline.outputs.run_id != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-${{ steps.pipeline.outputs.run_id }}
+          path: pipeline/cache/raw/${{ steps.pipeline.outputs.run_id }}/
+          retention-days: 90
+          if-no-files-found: warn
+
+      - name: Commit run output
+        if: always() && steps.pipeline.outputs.run_id != ''
+        env:
+          RUN_ID: ${{ steps.pipeline.outputs.run_id }}
+          STATUS: ${{ steps.pipeline.outputs.status }}
+          CITY: ${{ inputs.city }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/runs
+          git commit -m "data: pipeline run ${RUN_ID} (${CITY}, ${STATUS})"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
