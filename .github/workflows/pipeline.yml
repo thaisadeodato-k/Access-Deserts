@@ -55,10 +55,25 @@ jobs:
           RUN_ID: ${{ steps.pipeline.outputs.run_id }}
           STATUS: ${{ steps.pipeline.outputs.status }}
           CITY: ${{ inputs.city }}
+        # The branch may have moved while the pipeline ran (e.g. another run pushed index.json).
+        # Instead of rebasing, keep the new run folder and its index entry, reset to the current
+        # remote branch and re-apply them, so index.json never conflicts. Retries if a push races.
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/runs
-          git commit -m "data: pipeline run ${RUN_ID} (${CITY}, ${STATUS})"
-          git pull --rebase origin "${GITHUB_REF_NAME}"
-          git push origin "HEAD:${GITHUB_REF_NAME}"
+          cp -r "public/data/runs/${RUN_ID}" "${RUNNER_TEMP}/run"
+          python -c "import json, os; i = json.load(open('public/data/runs/index.json', encoding='utf-8')); e = next(r for r in i['runs'] if r['run_id'] == os.environ['RUN_ID']); json.dump(e, open(os.path.join(os.environ['RUNNER_TEMP'], 'entry.json'), 'w', encoding='utf-8'))"
+          for attempt in 1 2 3; do
+            git fetch origin "${GITHUB_REF_NAME}"
+            git reset --hard "origin/${GITHUB_REF_NAME}"
+            rm -rf "public/data/runs/${RUN_ID}"
+            mkdir -p public/data/runs
+            cp -r "${RUNNER_TEMP}/run" "public/data/runs/${RUN_ID}"
+            python -c "import json, os; from pathlib import Path; from pipeline.access_deserts.output import update_index; update_index(Path('public/data/runs'), json.load(open(os.path.join(os.environ['RUNNER_TEMP'], 'entry.json'), encoding='utf-8')))"
+            git add public/data/runs
+            git commit -m "data: pipeline run ${RUN_ID} (${CITY}, ${STATUS})"
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then exit 0; fi
+            sleep $((attempt * 10))
+          done
+          echo "Push failed after 3 attempts; the run is still available as the raw-${RUN_ID} artifact." >&2
+          exit 1
