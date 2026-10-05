@@ -16,7 +16,7 @@ It is a portfolio piece for a master's application (Erasmus Mundus AISS – AI f
 8. When you change architecture or parameters, update the Method page placeholders and this file.
 
 ## Architecture
-The project was scaffolded in Lovable (React + Vite + TypeScript, Lovable Cloud enabled). Heavy processing does NOT run in the browser or in edge functions. Current target architecture:
+The project was scaffolded in Lovable as TanStack Start (React 19 + Vite + TypeScript, SSR via Nitro with a Cloudflare build target), with Lovable Cloud (Supabase) enabled. Lovable's own plan in `.lovable/plan/` is superseded by this file. Heavy processing does NOT run in the browser or in edge functions. Current target architecture:
 
 - **Pipeline (Python, GitHub Actions)** in `/pipeline`:
   - Runs on manual trigger (`workflow_dispatch`) and optionally on a schedule.
@@ -28,6 +28,14 @@ The project was scaffolded in Lovable (React + Vite + TypeScript, Lovable Cloud 
 - **Frontend** reads only files under `public/data/`. It never calls external data sources.
 - **Snapshots:** a run marked `snapshot: true` in `index.json` is served at `/snapshot/{date}` and must never change. This is the link submitted with the application. The live route `/` shows the latest run with the label "Live data – last updated {date}".
 - If something from the Lovable scaffold (database tables, admin area, edge functions) becomes redundant with this architecture, list it and ask before removing.
+
+### To retire later
+Kept working for now, but new code must not depend on them. Retire only after the pipeline works end to end, and only with approval.
+- Lovable Cloud tables `cities`, `sources`, `discovered_layers`, `runs`, `run_logs` and their migration `drizzle/migrations/0000_migration.sql` (replaced by `pipeline/config/*.yaml`, `run.json`, `runs/index.json`).
+- `/admin` route (`src/routes/admin.tsx`) and `src/lib/admin.functions.ts` (GetCapabilities discovery: port its logic to a Python pipeline step). Removed from public navigation on 2026-10-05; the route still works by URL.
+- `src/integrations/supabase/*`, `supabase/config.toml`, `drizzle.config.ts`, `drizzle/schema.ts`, and the `@supabase/supabase-js`, `drizzle-orm`, `drizzle-kit`, `postgres` dependencies.
+- The Supabase query on the Map page (`src/routes/index.tsx`, source counts).
+- Cloud secret `ADMIN_KEY` and the Supabase variables in `.env`.
 
 ## Output data model (per run)
 - `services.geojson` — normalised points: id, source_id, name, category, subcategory, geometry_type, address.
