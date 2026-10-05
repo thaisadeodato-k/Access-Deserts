@@ -396,11 +396,42 @@ sources:
       58 polygons of CRAS coverage areas (qt_area_abrangencia_centro), not service locations
       (inventory 2026-10-05). Was configured as the CRAS service source until then.
 
-  # ---- Demand --------------------------------------------------------------------------------
+  # ---- Demand (Phase 5, approved 2026-10-05) -----------------------------------------------------
   - source_id: sp_geosampa_densidade_demografica
-    name: Census tracts 2022 – population density
+    name: Census tracts 2022 – geometry, population check and IPVS 2022
     layer: geoportal:densidade_demografica
     role: demand
     category: null
     subcategory: null
     features_at_verification: 27301
+    approved: true
+    sort_by: cd_identificador
+    id_field: cd_original_setor_censitario
+
+  - source_id: sp_ibge_basico
+    name: IBGE Census 2022 – basic aggregates by tract (population, households)
+    publisher: IBGE – Censo Demográfico 2022
+    layer: Agregados_por_setores_basico_BR.csv
+    endpoint_url: https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_basico_BR_20260520.zip
+    protocol: csv
+    role: demand
+    category: null
+    subcategory: null
+    features_at_verification: 27301   # São Paulo tracts (5 Oct 2026)
+    approved: true
+    csv: {member: Agregados_por_setores_basico_BR.csv, encoding: latin-1, delimiter: ";", decimal: ",",
+          key: CD_SETOR, columns: [v0001, v0007]}
+
+  - source_id: sp_ibge_renda
+    name: IBGE Census 2022 – household-head income by tract
+    publisher: IBGE – Censo Demográfico 2022
+    layer: Agregados_por_setores_renda_responsavel_BR.csv
+    endpoint_url: https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios_Rendimento_do_Responsavel/Agregados_por_setores_renda_responsavel_BR_20260508_csv.zip
+    protocol: csv
+    role: demand
+    category: null
+    subcategory: null
+    features_at_verification: 26889   # São Paulo rows (412 tracts without households are absent)
+    approved: true
+    csv: {member: Agregados_por_setores_renda_responsavel_BR.csv, encoding: utf-8, delimiter: ";", decimal: ".",
+          key: CD_SETOR, columns: [V06001, V06004, V06006]}

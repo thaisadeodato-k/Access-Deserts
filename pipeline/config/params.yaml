@@ -19,3 +19,8 @@ wfs:
 
 quality:
   empty_field_threshold: 0.20      # report fields with more than 20% empty values
+
+demand:                            # Phase 5 (approved 2026-10-05)
+  income_coverage_threshold: 0.5   # hexagon gets income only if >= 50% of its population lives in tracts with usable income
+  sensitivity_thresholds: [0.3, 0.5, 0.7]
+  comparison_min_coverage: 0.5     # IPVS comparison only where >= 50% of the population is in classified tracts

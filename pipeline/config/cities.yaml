@@ -27,4 +27,26 @@ sp:
   # requested; when found in metadata or data they are logged as a quality issue.
   allowed_hosts:
     - wfs.geosampa.prefeitura.sp.gov.br
+    - ftp.ibge.gov.br                 # IBGE census aggregates (approved 2026-10-05, Phase 5)
   internal_host_pattern: '\.prodam$'
+
+  # Demand (Phase 5, approved 2026-10-05). Tract polygons from GeoSampa (identical codes, areas and
+  # population to IBGE, verified 5 Oct 2026); population, households and income from IBGE.
+  demand:
+    tracts:
+      source_id: sp_geosampa_densidade_demografica
+      code_field: cd_original_setor_censitario
+      population_check_field: qt_populacao   # must equal IBGE v0001 (checked every run)
+      comparison_index:                      # comparison only, never replaces vulnerability_score
+        field: cd_indice_vulnerabilidade_social
+        label: IPVS 2022 (Fundação SEADE)
+        vulnerable_from: 4                   # groups 4-6 = "vulneráveis" (SEADE)
+    population:
+      source_id: sp_ibge_basico
+      field: v0001                           # total persons
+      households_field: v0007                # occupied private households (DPPO + DPIO)
+    income:
+      source_id: sp_ibge_renda
+      mean_field: V06004                     # mean income of household heads WITH income
+      weight_field: V06001                   # all household heads (with and without income)
+      median_field: V06006                   # tract level only
