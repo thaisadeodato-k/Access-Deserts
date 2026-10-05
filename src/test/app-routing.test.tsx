@@ -14,4 +14,13 @@ describe("App routing", () => {
 
     expect(matches.at(-1)?.routeId).not.toBe(rootRouteId);
   });
+
+  it("matches the snapshot route with its date parameter", () => {
+    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
+
+    const match = router.matchRoutes("/snapshot/2026-10-05").at(-1);
+
+    expect(match?.routeId).toBe("/snapshot/$date");
+    expect(match?.params).toEqual({ date: "2026-10-05" });
+  });
 });

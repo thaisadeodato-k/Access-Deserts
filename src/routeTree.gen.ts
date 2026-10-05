@@ -15,6 +15,7 @@ import { Route as CommunityRouteImport } from './routes/community'
 import { Route as MethodRouteImport } from './routes/method'
 import { Route as ProposalsRouteImport } from './routes/proposals'
 import { Route as ReliabilityRouteImport } from './routes/reliability'
+import { Route as SnapshotDateRouteImport } from './routes/snapshot.$date'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +47,11 @@ const ReliabilityRoute = ReliabilityRouteImport.update({
   path: '/reliability',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SnapshotDateRoute = SnapshotDateRouteImport.update({
+  id: '/snapshot/$date',
+  path: '/snapshot/$date',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/method': typeof MethodRoute
   '/proposals': typeof ProposalsRoute
   '/reliability': typeof ReliabilityRoute
+  '/snapshot/$date': typeof SnapshotDateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/method': typeof MethodRoute
   '/proposals': typeof ProposalsRoute
   '/reliability': typeof ReliabilityRoute
+  '/snapshot/$date': typeof SnapshotDateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,13 +79,27 @@ export interface FileRoutesById {
   '/method': typeof MethodRoute
   '/proposals': typeof ProposalsRoute
   '/reliability': typeof ReliabilityRoute
+  '/snapshot/$date': typeof SnapshotDateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/admin' | '/community' | '/method' | '/proposals' | '/reliability'
+    | '/'
+    | '/admin'
+    | '/community'
+    | '/method'
+    | '/proposals'
+    | '/reliability'
+    | '/snapshot/$date'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/community' | '/method' | '/proposals' | '/reliability'
+  to:
+    | '/'
+    | '/admin'
+    | '/community'
+    | '/method'
+    | '/proposals'
+    | '/reliability'
+    | '/snapshot/$date'
   id:
     | '__root__'
     | '/'
@@ -86,6 +108,7 @@ export interface FileRouteTypes {
     | '/method'
     | '/proposals'
     | '/reliability'
+    | '/snapshot/$date'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -95,6 +118,7 @@ export interface RootRouteChildren {
   MethodRoute: typeof MethodRoute
   ProposalsRoute: typeof ProposalsRoute
   ReliabilityRoute: typeof ReliabilityRoute
+  SnapshotDateRoute: typeof SnapshotDateRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -141,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReliabilityRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/snapshot/$date': {
+      id: '/snapshot/$date'
+      path: '/snapshot/$date'
+      fullPath: '/snapshot/$date'
+      preLoaderRoute: typeof SnapshotDateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -151,6 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   MethodRoute: MethodRoute,
   ProposalsRoute: ProposalsRoute,
   ReliabilityRoute: ReliabilityRoute,
+  SnapshotDateRoute: SnapshotDateRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
