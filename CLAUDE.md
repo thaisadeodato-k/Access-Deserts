@@ -24,6 +24,9 @@ The project was scaffolded in Lovable as TanStack Start (React 19 + Vite + TypeS
   - Steps: FETCH → NORMALISE → (CLASSIFY + DEDUPLICATE, later phase) → GRID → METRICS → QUALITY.
   - Writes results as static files to `public/data/runs/{run_id}/` (run_id = ISO date + short id) and updates `public/data/runs/index.json` (list of runs, latest run, snapshot flag).
   - Commits the output back to the repo with a clear message. Runs are never overwritten.
+  - Raw responses are never committed: they go to gitignored `pipeline/cache/raw/{run_id}/` and to a GitHub Actions artifact `raw-{run_id}` (90-day retention); `run.json` lists every page's URL, HTTP status, size and sha256. When a run is marked as a snapshot, its raw files are attached to a GitHub Release so they never expire (implemented in the snapshot phase).
+  - Only libraries actually used are in `pipeline/requirements.txt` (pinned); geopandas/shapely/pandas/h3 are added in the phase that first needs them.
+  - Run locally (Windows): `py -3.13 -m venv .venv-pipeline`, `.venv-pipeline\Scripts\pip install -r pipeline\requirements.txt`, `.venv-pipeline\Scripts\python -m pipeline.access_deserts.run --city sp` (use `--data-dir`/`--cache-dir` to write outside the repo for test runs).
 - **Source configuration** in `/pipeline/config/sources.yaml` (versioned, reviewable): source_id, city_code, name, publisher, layer, endpoint_url, protocol (`wfs` | `csv` | `geojson` | `overpass` | `api`), type_name/query, category, subcategory, approved (true/false). Only approved sources are used.
 - **Frontend** reads only files under `public/data/`. It never calls external data sources.
 - **Snapshots:** a run marked `snapshot: true` in `index.json` is served at `/snapshot/{date}` and must never change. This is the link submitted with the application. The live route `/` shows the latest run with the label "Live data – last updated {date}".
@@ -53,7 +56,7 @@ Kept working for now, but new code must not depend on them. Retire only after th
 - Polygons (parks, squares): distance to nearest edge; fallback to centroid, recorded in run.json.
 
 ## Data sources — São Paulo
-Layer names verified in the public GeoSampa WFS GetCapabilities on 4 Oct 2026.
+Layer names verified in the public GeoSampa WFS GetCapabilities on 4 Oct 2026; all 16 re-verified on 5 Oct 2026 (feature counts recorded in `pipeline/config/sources.yaml`).
 
 ### 1. GeoSampa WFS (Prefeitura de São Paulo / SMUL-Geoinfo)
 - Base URL: `http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs`
@@ -61,6 +64,9 @@ Layer names verified in the public GeoSampa WFS GetCapabilities on 4 Oct 2026.
 - Request pattern: `SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES={layer}&OUTPUTFORMAT=application/json&SRSNAME=EPSG:4326&COUNT=1000&STARTINDEX={n}`
 - Native CRS: EPSG:31983 (SIRGAS 2000 / UTM 23S). Reproject if the server ignores SRSNAME.
 - Paginate until a page returns fewer than COUNT features. Save raw responses before normalising.
+- Layers without a primary key reject STARTINDEX ("Cannot do natural order without a primary key") unless `SORTBY` is given: set `sort_by` in sources.yaml to a field confirmed by DescribeFeatureType (e.g. `area_contexto` → `cd_identificador_area_contexto`).
+- `*.prodam` occurrences: `http://geoportal.prodam` is only the XML namespace URI (not a host); `metadados.geosampa.prodam` appears in a MetadataURL (internal host, flagged). Internal hosts are matched with `\.prodam$`.
+- Observed 5 Oct 2026 on the UBS layer: SRSNAME=EPSG:4326 honoured, lon/lat axis order, all 483 features in one page. The pipeline still checks CRS/axis order on every run.
 
 Layer → category:
 - school: `geoportal:equipamento_educacao_rede_publica` (primary_secondary), `geoportal:equipamento_educacao_infantil_rede_publica` (early_childhood), `geoportal:equipamento_educacao_ceu` (ceu)
@@ -69,10 +75,16 @@ Layer → category:
 - park_square: `geoportal:pde_parque_municipal` (polygons), `geoportal:GEOSAMPA_v_praca_largo` (polygons)
 - library: `geoportal:equipamento_cultura_bibliotecas`
 - culture: `geoportal:equipamento_cultura_espacos_culturais`, `geoportal:equipamento_cultura_museus`, `geoportal:equipamento_cultura_teatro_cinema_show`
-- metro_train: `geoportal:estacao_metro` (check whether it includes CPTM train stations)
+- metro_train: `geoportal:estacao_metro` (check whether it includes CPTM train stations — CPTM has its own layer `geoportal:estacao_trem`, so probably not; attributes not yet checked)
 - Context (not counted): `geoportal:distrito_municipal`, `geoportal:area_contexto`, `geoportal:corredor_onibus`, `geoportal:densidade_demografica` (2022 tracts; primary demand layer if it carries population/density)
+- `geoportal:area_contexto` is NOT the city boundary: 1,359 features = municipalities of São Paulo state (type M) + "OCEANO ATLÂNTICO" (O) + "RMSP" (R). São Paulo appears twice: id 27 "São Paulo" (1,522.5 km², identical area and bbox to the union of the 96 `distrito_municipal` polygons) and id 10027 "SÃO PAULO" (1,527.5 km², different version). City boundary choice is pending (Phase 4); until then "% outside boundary" is null.
 
-TO DISCOVER (not confirmed): bus stops, bus terminals, CPTM train stations. Search GetCapabilities Name/Title for "ponto", "parada", "onibus", "terminal", "trem", "cptm", "estacao"; list candidates (name, title, feature count) and wait for my approval.
+Transit candidates (discovery 5 Oct 2026; NOT approved — waiting for approval). 50 layers matched the search terms; most are `sac_*` complaint layers or unrelated (spot heights, lighting). Plausible:
+- `geoportal:ponto_onibus` — Pontos de Ônibus — 22,570 features
+- `geoportal:terminal_onibus` — Terminal de Ônibus — 50
+- `geoportal:estacao_trem` — Trem Metropolitano – Estação — 109
+- `geoportal:pde_transporte_estacao_terminal` — Transporte público coletivo – Estações e Terminais (PDE Mapa 9) — 900
+- Lines/lanes (context only): `geoportal:linha_onibus` (2,322), `geoportal:linha_trem` (26), `geoportal:faixa_onibus` (7,378)
 
 ### 2. IBGE Census 2022 (demand)
 - São Paulo municipality code: 3550308. Join key: tract code (CD_SETOR).
