@@ -37,3 +37,9 @@ dist-ssr
 
 # bun.lock is the lockfile of record
 package-lock.json
+
+# Pipeline: raw responses and local virtualenv (raw files go to Actions artifacts / Releases)
+pipeline/cache/
+.venv-pipeline/
+__pycache__/
+.pytest_cache/
