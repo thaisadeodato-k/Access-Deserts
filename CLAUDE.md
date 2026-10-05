@@ -88,6 +88,17 @@ Transit candidates (discovery 5 Oct 2026; NOT approved — waiting for approval)
 - `geoportal:pde_transporte_estacao_terminal` — Transporte público coletivo – Estações e Terminais (PDE Mapa 9) — 900
 - Lines/lanes (context only): `geoportal:linha_onibus` (2,322), `geoportal:linha_trem` (26), `geoportal:faixa_onibus` (7,378)
 
+Layer inventory 5 Oct 2026 (`python -m pipeline.access_deserts.inventory`; report in `pipeline/discovery/inventory-2026-10-05.md`). All counts match `features_at_verification`. Nothing approved from it yet. Findings that affect approval:
+- Paging: `equipamento_educacao_infantil_rede_publica` and `ponto_onibus` need SORTBY (`cd_identificador`, `cd_identificador_ponto_onibus`; both unique). `GEOSAMPA_v_praca_largo` returns empty pages for any STARTINDEX > 0, even with SORTBY, but one request with COUNT ≥ 3,831 returns all 3,830 (7.3 MB).
+- Generated (unstable) feature ids (`*.fid--…`): `equipamento_educacao_infantil_rede_publica`, `area_contexto`, `ponto_onibus`. Record ids must come from an attribute for these.
+- Education layers: `nm_esfera_administrativa_equipamento` contradicts the type (EE state schools = "MUNICIPAL"; EMEF, EMEI, CEI DIRET and all 150 CEU units = "PRIVADA"). Not usable for inclusion rules.
+- `centro_referencia_assistencia_social` = 58 polygons of CRAS coverage areas (`qt_area_abrangencia_centro`), not facility points. CRAS points: `geoportal:equipamento_assistencia_social`, class "CENTRO DE REFERÊNCIA DE ASSISTÊNCIA SOCIAL - CRAS" (54 points, all "DIRETA"; `nm_equipamento` holds the operator "PREFEITURA MUNICIPAL DE SAO PAULO", not the unit name). Candidate in `pipeline/config/candidates.yaml`.
+- `pde_parque_municipal`: 164 of 280 parks are "Proposto" (planned), 116 "Existente".
+- `equipamento_cultura_teatro_cinema_show`: one record per cinema/theatre room (387 cinema rooms), 364 "Particular".
+- `estacao_metro`: metro only (6 lines incl. ViaQuatro and monorail line 15); interchange stations appear once per line. CPTM is `estacao_trem` (109).
+- `pde_transporte_estacao_terminal`: 628 of 900 "Planejado"; 518 without geometry.
+- `area_contexto` as served is 86 MB (whole state); fetch only the São Paulo feature for the boundary check.
+
 ### 2. IBGE Census 2022 (demand)
 - São Paulo municipality code: 3550308. Join key: tract code (CD_SETOR).
 - Tract geometry: IBGE 2022 census tract mesh.
