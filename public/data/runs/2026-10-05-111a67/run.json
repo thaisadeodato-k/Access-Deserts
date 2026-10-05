@@ -1,0 +1,2325 @@
+{
+ "run_id": "2026-10-05-111a67",
+ "city_code": "sp",
+ "city_name": "São Paulo",
+ "status": "completed",
+ "started_at": "2026-10-05T21:59:35Z",
+ "finished_at": "2026-10-05T22:01:24Z",
+ "code_version": {
+  "git_commit": "d952490d23b5196e17d8bf7d62744772533d6a99"
+ },
+ "environment": {
+  "runner": "github-actions",
+  "python": "3.13.15"
+ },
+ "parameters": {
+  "h3_resolution": 8,
+  "service_threshold_m": 1000,
+  "transit_threshold_m": 500,
+  "desert_rule": "population above city median AND zero services of the category within service_threshold_m",
+  "vulnerability_formula": "inverse percentile of average household-head income (IBGE Census 2022, V06004)",
+  "population_income_method": "area-weighted from census tracts",
+  "polygon_distance_method": "distance to nearest edge; fallback to centroid (recorded per run)",
+  "wfs": {
+   "page_size": 1000,
+   "timeout_s": 120,
+   "retries": 3,
+   "max_pages": 500
+  },
+  "quality": {
+   "empty_field_threshold": 0.2
+  },
+  "demand": {
+   "income_coverage_threshold": 0.5,
+   "sensitivity_thresholds": [
+    0.3,
+    0.5,
+    0.7
+   ],
+   "comparison_min_coverage": 0.5
+  }
+ },
+ "steps": {
+  "executed": [
+   "fetch",
+   "normalise",
+   "quality",
+   "boundary",
+   "grid (demand)"
+  ],
+  "pending": [
+   "classify + deduplicate (Phase 7)",
+   "metrics (Phase 6)"
+  ]
+ },
+ "boundary": {
+  "method": "union",
+  "source_id": "sp_geosampa_distrito_municipal",
+  "check_against": "sp_geosampa_area_contexto",
+  "native_crs": "EPSG:31983",
+  "area_km2": 1522.532,
+  "features_unioned": 96,
+  "consistency_check": {
+   "reference": "sp_geosampa_area_contexto",
+   "reference_features": 1,
+   "boundary_area_km2": 1522.532,
+   "reference_area_km2": 1522.532,
+   "area_difference_km2": -0.0,
+   "symmetric_difference_km2": 0.0,
+   "symmetric_difference_pct_of_boundary": 0.0
+  }
+ },
+ "demand": {
+  "method": {
+   "h3_resolution": 8,
+   "hexagons": "H3 cells intersecting the city boundary",
+   "interpolation": "area-weighted from census tracts (uniform population within each tract)",
+   "population": "sp_ibge_basico.v0001",
+   "income": "sp_ibge_renda.V06004 (mean income of household heads with income), weighted by V06001 (all household heads) x area share; suppressed and unavailable values are missing",
+   "income_bias": "The mean excludes household heads without income; the number of heads with income is not published by tract, so the mean cannot be adjusted and overstates income where many heads have no income.",
+   "income_coverage_threshold": 0.5,
+   "vulnerability_score": "1 - percentile rank of income_est among populated hexagons with income (1 = lowest income)",
+   "comparison_index": "IPVS 2022 (Fundação SEADE)"
+  },
+  "tracts": {
+   "tract_polygons": 27301,
+   "tracts_with_population_row": 27301,
+   "population_rows_without_polygon": 0,
+   "income_rows_without_polygon": 0,
+   "population_total": 11451999.0,
+   "population_check": {
+    "compared": 27301,
+    "mismatches": 0,
+    "examples": []
+   },
+   "income_status": {
+    "absent": {
+     "tracts": 412,
+     "population": 0.0,
+     "population_pct": 0.0
+    },
+    "not_available": {
+     "tracts": 5,
+     "population": 946.0,
+     "population_pct": 0.008
+    },
+    "ok": {
+     "tracts": 26672,
+     "population": 11440074.0,
+     "population_pct": 99.896
+    },
+    "suppressed": {
+     "tracts": 212,
+     "population": 10979.0,
+     "population_pct": 0.096
+    }
+   }
+  },
+  "hexagons": 2278,
+  "hexagons_populated": 2108,
+  "hexagons_with_income": 2039,
+  "hexagons_scored": 2039,
+  "population_in_hexagons": 11451997,
+  "population_in_tracts": 11451999,
+  "sensitivity": [
+   {
+    "threshold": 0.3,
+    "hexagons_without_income": 67,
+    "populated_hexagons": 2108,
+    "population_without_income": 1277,
+    "population_pct": 0.011
+   },
+   {
+    "threshold": 0.5,
+    "hexagons_without_income": 69,
+    "populated_hexagons": 2108,
+    "population_without_income": 1283,
+    "population_pct": 0.011
+   },
+   {
+    "threshold": 0.7,
+    "hexagons_without_income": 76,
+    "populated_hexagons": 2108,
+    "population_without_income": 7750,
+    "population_pct": 0.068
+   }
+  ],
+  "comparison": {
+   "hexagons_compared": 1818,
+   "min_comparison_coverage": 0.5,
+   "spearman_rho": 0.8883,
+   "more_vulnerable_by_income_than_by_index": [
+    {
+     "h3_id": "88a8103839fffff",
+     "district": "ANHANGUERA",
+     "vulnerability_score": 0.7419,
+     "comparison_mean": 2.0,
+     "income_est": 1908.57,
+     "population_est": 185.2,
+     "rank_difference": 0.5715
+    },
+    {
+     "h3_id": "88a8108d89fffff",
+     "district": "MARSILAC",
+     "vulnerability_score": 0.8587,
+     "comparison_mean": 2.374,
+     "income_est": 1642.43,
+     "population_est": 211.8,
+     "rank_difference": 0.5388
+    },
+    {
+     "h3_id": "88a81038b3fffff",
+     "district": "ANHANGUERA",
+     "vulnerability_score": 0.6398,
+     "comparison_mean": 2.0,
+     "income_est": 2134.04,
+     "population_est": 33.8,
+     "rank_difference": 0.4708
+    },
+    {
+     "h3_id": "88a8101727fffff",
+     "district": "PARELHEIROS",
+     "vulnerability_score": 0.6364,
+     "comparison_mean": 2.0,
+     "income_est": 2138.17,
+     "population_est": 51.3,
+     "rank_difference": 0.467
+    },
+    {
+     "h3_id": "88a81038bbfffff",
+     "district": null,
+     "vulnerability_score": 0.6286,
+     "comparison_mean": 2.0,
+     "income_est": 2151.85,
+     "population_est": 97.3,
+     "rank_difference": 0.4587
+    },
+    {
+     "h3_id": "88a81038b1fffff",
+     "district": "ANHANGUERA",
+     "vulnerability_score": 0.6374,
+     "comparison_mean": 2.066,
+     "income_est": 2136.84,
+     "population_est": 340.6,
+     "rank_difference": 0.4213
+    },
+    {
+     "h3_id": "88a8102b49fffff",
+     "district": "PERUS",
+     "vulnerability_score": 0.5741,
+     "comparison_mean": 2.0,
+     "income_est": 2283.45,
+     "population_est": 42.0,
+     "rank_difference": 0.402
+    },
+    {
+     "h3_id": "88a810020dfffff",
+     "district": "GRAJAU",
+     "vulnerability_score": 0.5736,
+     "comparison_mean": 2.0,
+     "income_est": 2285.99,
+     "population_est": 252.4,
+     "rank_difference": 0.4015
+    },
+    {
+     "h3_id": "88a8101193fffff",
+     "district": "GRAJAU",
+     "vulnerability_score": 0.5932,
+     "comparison_mean": 2.024,
+     "income_est": 2235.81,
+     "population_est": 30.4,
+     "rank_difference": 0.3957
+    },
+    {
+     "h3_id": "88a8108c33fffff",
+     "district": "MARSILAC",
+     "vulnerability_score": 0.6742,
+     "comparison_mean": 2.412,
+     "income_est": 2052.86,
+     "population_est": 75.0,
+     "rank_difference": 0.3588
+    }
+   ],
+   "more_vulnerable_by_index_than_by_income": [
+    {
+     "h3_id": "88a8100595fffff",
+     "district": null,
+     "vulnerability_score": 0.2066,
+     "comparison_mean": 4.644,
+     "income_est": 5191.42,
+     "population_est": 1127.1,
+     "rank_difference": -0.6125
+    },
+    {
+     "h3_id": "88a810051dfffff",
+     "district": "VILA SONIA",
+     "vulnerability_score": 0.2939,
+     "comparison_mean": 5.058,
+     "income_est": 3840.58,
+     "population_est": 24651.3,
+     "rank_difference": -0.5993
+    },
+    {
+     "h3_id": "88a81005a3fffff",
+     "district": "BUTANTA",
+     "vulnerability_score": 0.2723,
+     "comparison_mean": 4.787,
+     "income_est": 4137.16,
+     "population_est": 6296.2,
+     "rank_difference": -0.5633
+    },
+    {
+     "h3_id": "88a8100515fffff",
+     "district": "VILA SONIA",
+     "vulnerability_score": 0.3371,
+     "comparison_mean": 5.026,
+     "income_est": 3403.09,
+     "population_est": 14877.2,
+     "rank_difference": -0.5471
+    },
+    {
+     "h3_id": "88a81005c7fffff",
+     "district": "RAPOSO TAVARES",
+     "vulnerability_score": 0.2507,
+     "comparison_mean": 4.35,
+     "income_est": 4450.75,
+     "population_est": 11101.6,
+     "rank_difference": -0.5118
+    },
+    {
+     "h3_id": "88a8103b07fffff",
+     "district": "JAGUARA",
+     "vulnerability_score": 0.3822,
+     "comparison_mean": 5.014,
+     "income_est": 3087.52,
+     "population_est": 939.0,
+     "rank_difference": -0.4959
+    },
+    {
+     "h3_id": "88a810050bfffff",
+     "district": "VILA ANDRADE",
+     "vulnerability_score": 0.3925,
+     "comparison_mean": 5.091,
+     "income_est": 3022.04,
+     "population_est": 24233.3,
+     "rank_difference": -0.4942
+    },
+    {
+     "h3_id": "88a8103b55fffff",
+     "district": "VILA LEOPOLDINA",
+     "vulnerability_score": 0.0942,
+     "comparison_mean": 3.493,
+     "income_est": 9092.67,
+     "population_est": 2535.8,
+     "rank_difference": -0.4796
+    },
+    {
+     "h3_id": "88a8100523fffff",
+     "district": "MORUMBI",
+     "vulnerability_score": 0.0505,
+     "comparison_mean": 3.028,
+     "income_est": 12523.34,
+     "population_est": 6997.4,
+     "rank_difference": -0.4513
+    },
+    {
+     "h3_id": "88a810054bfffff",
+     "district": "VILA ANDRADE",
+     "vulnerability_score": 0.288,
+     "comparison_mean": 4.067,
+     "income_est": 3931.65,
+     "population_est": 3277.9,
+     "rank_difference": -0.4287
+    }
+   ],
+   "note": "rank_difference = percentile rank of vulnerability_score minus percentile rank of the comparison index mean group (both: higher = more vulnerable)."
+  }
+ },
+ "polygon_distance": {
+  "method_used": null,
+  "note": "Distances are computed in Phase 6."
+ },
+ "capabilities": [
+  {
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities",
+   "http_status": 200,
+   "bytes": 423226,
+   "sha256": "86ec544e6620a75d64a11da53413fff57763ad7ec72919ac886f0a53ca55d266",
+   "raw_file": "capabilities.xml",
+   "layers_listed": 484
+  }
+ ],
+ "sources": [
+  {
+   "source_id": "sp_geosampa_educacao_rede_publica",
+   "layer": "geoportal:equipamento_educacao_rede_publica",
+   "type_name_queried": "geoportal:equipamento_educacao_rede_publica",
+   "layer_check": {
+    "layer_configured": "geoportal:equipamento_educacao_rede_publica",
+    "type_name_queried": "geoportal:equipamento_educacao_rede_publica",
+    "layer_in_capabilities": true,
+    "title": "Ensino Fundamental e Médio",
+    "abstract": "Unidades de ensino fundamental e médio.",
+    "keywords": [
+     "features",
+     "equipamento_educacao_rede_publica_v2"
+    ],
+    "version_keywords": [
+     "equipamento_educacao_rede_publica_v2"
+    ],
+    "similar_layers_in_capabilities": []
+   },
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "service",
+   "category": "school",
+   "subcategory": "primary_secondary",
+   "sort_by": null,
+   "page_size": 1000,
+   "id_field": null,
+   "record_filter": null,
+   "field_map": {
+    "name": "nm_equipamento",
+    "address": [
+     "tx_endereco_equipamento",
+     "nm_bairro_equipamento",
+     "cd_cep_equipamento"
+    ],
+    "type": "nm_tipo_equipamento"
+   },
+   "inclusion_rules": null,
+   "subcategory_rules": null,
+   "venue_grouping": null,
+   "record_overrides": [],
+   "placeholder_values": null,
+   "derived_name": null,
+   "highlight_fields": {
+    "tx_horario_funcionamento": "Opening hours"
+   },
+   "fetched_at": "2026-10-05T21:59:36Z",
+   "number_matched_reported": 1590,
+   "features_returned": 1590,
+   "features_normalised": 1590,
+   "features_included_in_metrics": 1590,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 1590
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_educacao_rede_publica/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aequipamento_educacao_rede_publica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=0",
+     "http_status": 200,
+     "bytes": 1153488,
+     "sha256": "c3f5ebb275782a9760b2573af5dd918d62a1f1e2b08f78efb164136a363d4884",
+     "raw_file": "page_0000.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aequipamento_educacao_rede_publica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=1000",
+     "http_status": 200,
+     "bytes": 697066,
+     "sha256": "16ffcbfc8462792e29370294cf695833d5b81241f5f3b6b0c8046b4a62ec48c8",
+     "raw_file": "page_0001.json",
+     "features": 590
+    }
+   ]
+  },
+  {
+   "source_id": "sp_geosampa_educacao_infantil",
+   "layer": "geoportal:equipamento_educacao_infantil_rede_publica",
+   "type_name_queried": "geoportal:equipamento_educacao_infantil_rede_publica",
+   "layer_check": {
+    "layer_configured": "geoportal:equipamento_educacao_infantil_rede_publica",
+    "type_name_queried": "geoportal:equipamento_educacao_infantil_rede_publica",
+    "layer_in_capabilities": true,
+    "title": "Educação Infantil",
+    "abstract": "Unidades de ensino públicas de Educação Infantil.",
+    "keywords": [
+     "equipamento_educacao_infantil_rede_publica_v2",
+     "features"
+    ],
+    "version_keywords": [
+     "equipamento_educacao_infantil_rede_publica_v2"
+    ],
+    "similar_layers_in_capabilities": []
+   },
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "service",
+   "category": "school",
+   "subcategory": "early_childhood",
+   "sort_by": "cd_identificador",
+   "page_size": 1000,
+   "id_field": "cd_identificador",
+   "record_filter": null,
+   "field_map": {
+    "name": "nm_equipamento",
+    "address": [
+     "tx_endereco_equipamento",
+     "nm_bairro_equipamento",
+     "cd_cep_equipamento"
+    ],
+    "type": "nm_tipo_equipamento"
+   },
+   "inclusion_rules": null,
+   "subcategory_rules": [
+    {
+     "field": "nm_tipo_equipamento",
+     "equals": "CR.P.CONV",
+     "subcategory": "partner_network"
+    }
+   ],
+   "venue_grouping": null,
+   "record_overrides": [],
+   "placeholder_values": null,
+   "derived_name": null,
+   "highlight_fields": {
+    "tx_horario_funcionamento": "Opening hours"
+   },
+   "fetched_at": "2026-10-05T21:59:38Z",
+   "number_matched_reported": 3047,
+   "features_returned": 3047,
+   "features_normalised": 3047,
+   "features_included_in_metrics": 3047,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 3047
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_educacao_infantil/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aequipamento_educacao_infantil_rede_publica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=0&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1329557,
+     "sha256": "f81fa8ce21cdc7e221147836166eed88134502b932eeccbaa5ab4600b5e8d516",
+     "raw_file": "page_0000.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aequipamento_educacao_infantil_rede_publica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=1000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1316601,
+     "sha256": "16dc584a501e3ec1410d530007bfa7d8da4de9fa7d0a23d6cd60107d9b344880",
+     "raw_file": "page_0001.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aequipamento_educacao_infantil_rede_publica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=2000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1338379,
+     "sha256": "6a5c4b10c6b76f95e15dfd0ca726c91fd68849efdf5c84e947b9c04beea3adfc",
+     "raw_file": "page_0002.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aequipamento_educacao_infantil_rede_publica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=3000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 63430,
+     "sha256": "1c02c7486ce54eadf80fce2d9886a2532fb456b2d6435004732c007b58e0fe68",
+     "raw_file": "page_0003.json",
+     "features": 47
+    }
+   ]
+  },
+  {
+   "source_id": "sp_geosampa_educacao_ceu",
+   "layer": "geoportal:equipamento_educacao_ceu",
+   "type_name_queried": "geoportal:equipamento_educacao_ceu",
+   "layer_check": {
+    "layer_configured": "geoportal:equipamento_educacao_ceu",
+    "type_name_queried": "geoportal:equipamento_educacao_ceu",
+    "layer_in_capabilities": true,
+    "title": "CEU(Centro Educacional Unificado)",
+    "abstract": "Unidades de ensino CEU(Centro Educacional Unificado).",
+    "keywords": [
+     "features",
+     "equipamento_educacao_ceu_v2"
+    ],
+    "version_keywords": [
+     "equipamento_educacao_ceu_v2"
+    ],
+    "similar_layers_in_capabilities": []
+   },
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "service",
+   "category": "school",
+   "subcategory": "ceu",
+   "sort_by": null,
+   "page_size": 1000,
+   "id_field": null,
+   "record_filter": null,
+   "field_map": {
+    "name": "nm_equipamento",
+    "address": [
+     "tx_endereco_equipamento",
+     "nm_bairro_equipamento",
+     "cd_cep_equipamento"
+    ],
+    "type": "nm_tipo_equipamento"
+   },
+   "inclusion_rules": null,
+   "subcategory_rules": null,
+   "venue_grouping": null,
+   "record_overrides": [],
+   "placeholder_values": null,
+   "derived_name": null,
+   "highlight_fields": {
+    "tx_horario_funcionamento": "Opening hours"
+   },
+   "fetched_at": "2026-10-05T21:59:42Z",
+   "number_matched_reported": 150,
+   "features_returned": 150,
+   "features_normalised": 150,
+   "features_included_in_metrics": 150,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 150
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_educacao_ceu/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aequipamento_educacao_ceu&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=0",
+     "http_status": 200,
+     "bytes": 185283,
+     "sha256": "0f9cd9c8a5b81c020e58546a494cc33fb9287961c617e7c541b058468174cdb2",
+     "raw_file": "page_0000.json",
+     "features": 150
+    }
+   ]
+  },
+  {
+   "source_id": "sp_geosampa_saude_ubs",
+   "layer": "geoportal:equipamento_saude_ubs_posto_centro",
+   "type_name_queried": "geoportal:equipamento_saude_ubs_posto_centro",
+   "layer_check": {
+    "layer_configured": "geoportal:equipamento_saude_ubs_posto_centro",
+    "type_name_queried": "geoportal:equipamento_saude_ubs_posto_centro",
+    "layer_in_capabilities": true,
+    "title": "UBS/Posto/Centro de Saúde",
+    "abstract": "UBS, Postos ou Centros de Saúde do Cadastro de estabelecimentos de saúde municipais, estaduais e privados.",
+    "keywords": [
+     "equipamento_saude_ubs_posto_centro_v2",
+     "features"
+    ],
+    "version_keywords": [
+     "equipamento_saude_ubs_posto_centro_v2"
+    ],
+    "similar_layers_in_capabilities": []
+   },
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "service",
+   "category": "health_ubs",
+   "subcategory": null,
+   "sort_by": null,
+   "page_size": 1000,
+   "id_field": null,
+   "record_filter": null,
+   "field_map": {
+    "name": "nm_equipamento",
+    "address": [
+     "tx_endereco_equipamento",
+     "nm_bairro_equipamento",
+     "cd_cep_equipamento"
+    ],
+    "type": "nm_tipo_equipamento",
+    "sphere": "nm_esfera_administrativa_equipamento"
+   },
+   "inclusion_rules": [
+    {
+     "field": "nm_esfera_administrativa_equipamento",
+     "equals": "Estadual",
+     "include": true,
+     "reason": "state-run (public service)"
+    },
+    {
+     "field": "nm_esfera_administrativa_equipamento",
+     "equals": "Privado",
+     "include": false,
+     "reason": "private provider"
+    },
+    {
+     "field": "nm_tipo_equipamento",
+     "equals": "SEM TIPO",
+     "include": false,
+     "reason": "missing type, needs review"
+    }
+   ],
+   "subcategory_rules": null,
+   "venue_grouping": null,
+   "record_overrides": [],
+   "placeholder_values": null,
+   "derived_name": null,
+   "highlight_fields": {
+    "tx_horario_funcionamento": "Opening hours"
+   },
+   "fetched_at": "2026-10-05T21:59:43Z",
+   "number_matched_reported": 483,
+   "features_returned": 483,
+   "features_normalised": 483,
+   "features_included_in_metrics": 479,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 483
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_saude_ubs/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aequipamento_saude_ubs_posto_centro&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=0",
+     "http_status": 200,
+     "bytes": 677514,
+     "sha256": "8f2d034f44f2d7bcfc22cf14ecc528ec14c582572f9385c74db6f032e1169521",
+     "raw_file": "page_0000.json",
+     "features": 483
+    }
+   ]
+  },
+  {
+   "source_id": "sp_geosampa_cras",
+   "layer": "geoportal:equipamento_assistencia_social",
+   "type_name_queried": "geoportal:equipamento_assistencia_social",
+   "layer_check": {
+    "layer_configured": "geoportal:equipamento_assistencia_social",
+    "type_name_queried": "geoportal:equipamento_assistencia_social",
+    "layer_in_capabilities": true,
+    "title": "Assistência Social",
+    "abstract": "Cadastro de Equipamentos da Secretaria de Assistência e Desenvolvimento Social do Município de São Paulo.",
+    "keywords": [
+     "features",
+     "equipamento_assistencia_social_v2"
+    ],
+    "version_keywords": [
+     "equipamento_assistencia_social_v2"
+    ],
+    "similar_layers_in_capabilities": []
+   },
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "service",
+   "category": "cras",
+   "subcategory": null,
+   "sort_by": null,
+   "page_size": 1000,
+   "id_field": null,
+   "record_filter": {
+    "field": "nm_classe_equipamento",
+    "equals": "CENTRO DE REFERÊNCIA DE ASSISTÊNCIA SOCIAL - CRAS",
+    "records_in_layer": 1336,
+    "records_kept": 54
+   },
+   "field_map": {
+    "address": [
+     "tx_endereco_equipamento",
+     "cd_cep_equipamento"
+    ],
+    "type": "nm_classe_equipamento"
+   },
+   "inclusion_rules": null,
+   "subcategory_rules": null,
+   "venue_grouping": null,
+   "record_overrides": [],
+   "placeholder_values": {
+    "cd_equipamento": [
+     "No"
+    ],
+    "nm_bairro_equipamento": [
+     "No"
+    ],
+    "tx_horario_funcionamento": [
+     "No"
+    ],
+    "tx_numero_telefone": [
+     "No"
+    ],
+    "cd_equipamento_base_origem": [
+     "No"
+    ]
+   },
+   "derived_name": {
+    "from_source": "sp_geosampa_cras_coverage",
+    "field": "nm_cras"
+   },
+   "highlight_fields": null,
+   "fetched_at": "2026-10-05T21:59:43Z",
+   "number_matched_reported": 54,
+   "features_returned": 54,
+   "features_normalised": 54,
+   "features_included_in_metrics": 54,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 54
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_cras/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aequipamento_assistencia_social&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=0&FILTER=%3Cfes%3AFilter+xmlns%3Afes%3D%22http%3A%2F%2Fwww.opengis.net%2Ffes%2F2.0%22%3E%3Cfes%3APropertyIsEqualTo%3E%3Cfes%3AValueReference%3Enm_classe_equipamento%3C%2Ffes%3AValueReference%3E%3Cfes%3ALiteral%3ECENTRO+DE+REFER%C3%8ANCIA+DE+ASSIST%C3%8ANCIA+SOCIAL+-+CRAS%3C%2Ffes%3ALiteral%3E%3C%2Ffes%3APropertyIsEqualTo%3E%3C%2Ffes%3AFilter%3E",
+     "http_status": 200,
+     "bytes": 62676,
+     "sha256": "764acadac22c6606dc596940c3cc919dfa7ff3c8f5ec74299e299159085cdab7",
+     "raw_file": "page_0000.json",
+     "features": 54
+    }
+   ],
+   "name_derivation": {
+    "method": "name of the sp_geosampa_cras_coverage area (nm_cras) containing the record; assigned only for one-to-one matches (point in exactly one area, area containing no other point)",
+    "from_source": "sp_geosampa_cras_coverage",
+    "field": "nm_cras",
+    "records": 54,
+    "records_with_geometry": 54,
+    "in_exactly_one_area": 54,
+    "in_no_area": 0,
+    "in_several_areas": 0,
+    "areas": 58,
+    "areas_without_record": [
+     "CRAS Brasilândia II",
+     "CRAS Itaim Paulista I",
+     "CRAS Itaim Paulista II",
+     "CRAS Itaim Paulista II",
+     "CRAS Itaim Paulista II",
+     "CRAS Penha"
+    ],
+    "areas_with_several_records": [
+     {
+      "area": "CRAS Freguesia Do Ó",
+      "records": 2
+     },
+     {
+      "area": "CRAS Artur Alvim",
+      "records": 2
+     }
+    ],
+    "names_assigned": 50,
+    "names_left_null": 4
+   }
+  },
+  {
+   "source_id": "sp_geosampa_parque_municipal",
+   "layer": "geoportal:pde_parque_municipal",
+   "type_name_queried": "geoportal:pde_parque_municipal",
+   "layer_check": {
+    "layer_configured": "geoportal:pde_parque_municipal",
+    "type_name_queried": "geoportal:pde_parque_municipal",
+    "layer_in_capabilities": true,
+    "title": "Parques Municipais (Mapa 5)",
+    "abstract": "Mapa 5 - Parques Municipais Existentes e Propostos.",
+    "keywords": [
+     "features",
+     "pde_parque_municipal"
+    ],
+    "version_keywords": [],
+    "similar_layers_in_capabilities": []
+   },
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "service",
+   "category": "park_square",
+   "subcategory": "park",
+   "sort_by": null,
+   "page_size": 1000,
+   "id_field": null,
+   "record_filter": null,
+   "field_map": {
+    "name": "nm_parque",
+    "type": "tx_tipo_categoria_parque_unidade_conservacao"
+   },
+   "inclusion_rules": [
+    {
+     "field": "tx_tipo_situacao_projeto",
+     "equals": "Proposto",
+     "include": false,
+     "reason": "planned, not built"
+    }
+   ],
+   "subcategory_rules": null,
+   "venue_grouping": null,
+   "record_overrides": [],
+   "placeholder_values": null,
+   "derived_name": null,
+   "highlight_fields": null,
+   "fetched_at": "2026-10-05T21:59:44Z",
+   "number_matched_reported": 280,
+   "features_returned": 280,
+   "features_normalised": 280,
+   "features_included_in_metrics": 116,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 57843
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_parque_municipal/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Apde_parque_municipal&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=0",
+     "http_status": 200,
+     "bytes": 1733731,
+     "sha256": "cffd327aac2ea661b167f8d00973d19fc30d5fb121f700b123ca110cc71dc858",
+     "raw_file": "page_0000.json",
+     "features": 280
+    }
+   ]
+  },
+  {
+   "source_id": "sp_geosampa_praca_largo",
+   "layer": "geoportal:GEOSAMPA_v_praca_largo",
+   "type_name_queried": "geoportal:GEOSAMPA_v_praca_largo",
+   "layer_check": {
+    "layer_configured": "geoportal:GEOSAMPA_v_praca_largo",
+    "type_name_queried": "geoportal:GEOSAMPA_v_praca_largo",
+    "layer_in_capabilities": true,
+    "title": "Cadastro de Praças e Largos",
+    "abstract": "Localização das praças e largos no território do município de São Paulo, com base nas informações repassadas por subprefeituras, SF e SEGES/CGPATRI.",
+    "keywords": [
+     "features",
+     "praca_largo"
+    ],
+    "version_keywords": [],
+    "similar_layers_in_capabilities": []
+   },
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "service",
+   "category": "park_square",
+   "subcategory": "square",
+   "sort_by": null,
+   "page_size": 5000,
+   "id_field": null,
+   "record_filter": null,
+   "field_map": {
+    "name": "nome",
+    "address": [
+     "endereco1",
+     "bairro",
+     "cep1"
+    ],
+    "type": "categoria"
+   },
+   "inclusion_rules": null,
+   "subcategory_rules": null,
+   "venue_grouping": null,
+   "record_overrides": [],
+   "placeholder_values": null,
+   "derived_name": null,
+   "highlight_fields": null,
+   "fetched_at": "2026-10-05T21:59:45Z",
+   "number_matched_reported": 3830,
+   "features_returned": 3830,
+   "features_normalised": 3830,
+   "features_included_in_metrics": 3830,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 169501
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_praca_largo/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3AGEOSAMPA_v_praca_largo&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=5000&STARTINDEX=0",
+     "http_status": 200,
+     "bytes": 7302332,
+     "sha256": "85ac3def8947f21b7a34eedad52d7962f7d027df5cce6723801f7d23bbd0c288",
+     "raw_file": "page_0000.json",
+     "features": 3830
+    }
+   ]
+  },
+  {
+   "source_id": "sp_geosampa_bibliotecas",
+   "layer": "geoportal:equipamento_cultura_bibliotecas",
+   "type_name_queried": "geoportal:equipamento_cultura_bibliotecas",
+   "layer_check": {
+    "layer_configured": "geoportal:equipamento_cultura_bibliotecas",
+    "type_name_queried": "geoportal:equipamento_cultura_bibliotecas",
+    "layer_in_capabilities": true,
+    "title": "Bibliotecas",
+    "abstract": "Identificação dos pontos georreferenciados de Bibliotecas.",
+    "keywords": [
+     "features",
+     "equipamento_cultura_bibliotecas_v3"
+    ],
+    "version_keywords": [
+     "equipamento_cultura_bibliotecas_v3"
+    ],
+    "similar_layers_in_capabilities": []
+   },
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "service",
+   "category": "library",
+   "subcategory": null,
+   "sort_by": null,
+   "page_size": 1000,
+   "id_field": null,
+   "record_filter": null,
+   "field_map": {
+    "name": "nm_equipamento",
+    "address": [
+     "tx_endereco_equipamento",
+     "cd_cep_equipamento"
+    ],
+    "type": "nm_tipo_equipamento",
+    "sphere": "nm_esfera_administrativa_equipamento"
+   },
+   "inclusion_rules": [
+    {
+     "field": "nm_esfera_administrativa_equipamento",
+     "equals": "Particular",
+     "include": false,
+     "reason": "private provider"
+    }
+   ],
+   "subcategory_rules": null,
+   "venue_grouping": null,
+   "record_overrides": [],
+   "placeholder_values": null,
+   "derived_name": null,
+   "highlight_fields": {
+    "tx_horario_funcionamento": "Opening hours"
+   },
+   "fetched_at": "2026-10-05T21:59:52Z",
+   "number_matched_reported": 192,
+   "features_returned": 192,
+   "features_normalised": 192,
+   "features_included_in_metrics": 184,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 192
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_bibliotecas/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aequipamento_cultura_bibliotecas&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=0",
+     "http_status": 200,
+     "bytes": 228290,
+     "sha256": "eb964b40ddd3b57cfb34fb9fb597ef63efde41313d1a9a5fea5a0a753ad6712d",
+     "raw_file": "page_0000.json",
+     "features": 192
+    }
+   ]
+  },
+  {
+   "source_id": "sp_geosampa_espacos_culturais",
+   "layer": "geoportal:equipamento_cultura_espacos_culturais",
+   "type_name_queried": "geoportal:equipamento_cultura_espacos_culturais",
+   "layer_check": {
+    "layer_configured": "geoportal:equipamento_cultura_espacos_culturais",
+    "type_name_queried": "geoportal:equipamento_cultura_espacos_culturais",
+    "layer_in_capabilities": true,
+    "title": "Espaços Culturais",
+    "abstract": "Identificação dos pontos georreferenciados de Espaços Culturais.",
+    "keywords": [
+     "features",
+     "equipamento_cultura_espacos_culturais_v3"
+    ],
+    "version_keywords": [
+     "equipamento_cultura_espacos_culturais_v3"
+    ],
+    "similar_layers_in_capabilities": []
+   },
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "service",
+   "category": "culture",
+   "subcategory": "cultural_space",
+   "sort_by": null,
+   "page_size": 1000,
+   "id_field": null,
+   "record_filter": null,
+   "field_map": {
+    "name": "nm_equipamento",
+    "address": [
+     "tx_endereco_equipamento",
+     "cd_cep_equipamento"
+    ],
+    "type": "nm_tipo_equipamento",
+    "sphere": "nm_esfera_administrativa_equipamento"
+   },
+   "inclusion_rules": [
+    {
+     "field": "nm_esfera_administrativa_equipamento",
+     "equals": "Particular",
+     "include": false,
+     "reason": "private provider"
+    }
+   ],
+   "subcategory_rules": null,
+   "venue_grouping": null,
+   "record_overrides": [],
+   "placeholder_values": null,
+   "derived_name": null,
+   "highlight_fields": {
+    "tx_horario_funcionamento": "Opening hours"
+   },
+   "fetched_at": "2026-10-05T21:59:53Z",
+   "number_matched_reported": 35,
+   "features_returned": 35,
+   "features_normalised": 35,
+   "features_included_in_metrics": 35,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 35
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_espacos_culturais/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aequipamento_cultura_espacos_culturais&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=0",
+     "http_status": 200,
+     "bytes": 41683,
+     "sha256": "aa2a8e2c1660593cfa0a09274b5c2bb25100093699f382b14bcd0d1bf43cc6a6",
+     "raw_file": "page_0000.json",
+     "features": 35
+    }
+   ]
+  },
+  {
+   "source_id": "sp_geosampa_museus",
+   "layer": "geoportal:equipamento_cultura_museus",
+   "type_name_queried": "geoportal:equipamento_cultura_museus",
+   "layer_check": {
+    "layer_configured": "geoportal:equipamento_cultura_museus",
+    "type_name_queried": "geoportal:equipamento_cultura_museus",
+    "layer_in_capabilities": true,
+    "title": "Museus",
+    "abstract": "Identificação dos pontos georreferenciados de Museus.",
+    "keywords": [
+     "equipamento_cultura_museus_v3",
+     "features"
+    ],
+    "version_keywords": [
+     "equipamento_cultura_museus_v3"
+    ],
+    "similar_layers_in_capabilities": []
+   },
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "service",
+   "category": "culture",
+   "subcategory": "museum",
+   "sort_by": null,
+   "page_size": 1000,
+   "id_field": null,
+   "record_filter": null,
+   "field_map": {
+    "name": "nm_equipamento",
+    "address": [
+     "tx_endereco_equipamento",
+     "cd_cep_equipamento"
+    ],
+    "type": "nm_tipo_equipamento",
+    "sphere": "nm_esfera_administrativa_equipamento"
+   },
+   "inclusion_rules": [
+    {
+     "field": "nm_esfera_administrativa_equipamento",
+     "equals": "Particular",
+     "include": false,
+     "reason": "private provider"
+    }
+   ],
+   "subcategory_rules": null,
+   "venue_grouping": null,
+   "record_overrides": [],
+   "placeholder_values": null,
+   "derived_name": null,
+   "highlight_fields": {
+    "tx_horario_funcionamento": "Opening hours"
+   },
+   "fetched_at": "2026-10-05T21:59:53Z",
+   "number_matched_reported": 167,
+   "features_returned": 167,
+   "features_normalised": 167,
+   "features_included_in_metrics": 99,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 167
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_museus/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aequipamento_cultura_museus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=0",
+     "http_status": 200,
+     "bytes": 181195,
+     "sha256": "2c8f4b4b034d241c56a81f55533136da6c7624773a46ba0d94eb22b0834b6ccc",
+     "raw_file": "page_0000.json",
+     "features": 167
+    }
+   ]
+  },
+  {
+   "source_id": "sp_geosampa_teatro_cinema_show",
+   "layer": "geoportal:equipamento_cultura_teatro_cinema_show",
+   "type_name_queried": "geoportal:equipamento_cultura_teatro_cinema_show",
+   "layer_check": {
+    "layer_configured": "geoportal:equipamento_cultura_teatro_cinema_show",
+    "type_name_queried": "geoportal:equipamento_cultura_teatro_cinema_show",
+    "layer_in_capabilities": true,
+    "title": "Teatro/Cinema/Shows",
+    "abstract": "Identificação dos pontos georreferenciados de salas de Teatro, salas de Cinema, Show e Concertos.",
+    "keywords": [
+     "equipamento_cultura_teatro_cinema_show_v3",
+     "features"
+    ],
+    "version_keywords": [
+     "equipamento_cultura_teatro_cinema_show_v3"
+    ],
+    "similar_layers_in_capabilities": []
+   },
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "service",
+   "category": "culture",
+   "subcategory": "theatre_cinema",
+   "sort_by": null,
+   "page_size": 1000,
+   "id_field": null,
+   "record_filter": null,
+   "field_map": {
+    "name": "nm_equipamento",
+    "address": [
+     "tx_endereco_equipamento",
+     "cd_cep_equipamento"
+    ],
+    "type": "nm_tipo_equipamento",
+    "sphere": "nm_esfera_administrativa_equipamento"
+   },
+   "inclusion_rules": [
+    {
+     "field": "nm_esfera_administrativa_equipamento",
+     "equals": "Particular",
+     "include": false,
+     "reason": "private provider"
+    }
+   ],
+   "subcategory_rules": null,
+   "venue_grouping": {
+    "fields": [
+     "tx_endereco_equipamento"
+    ],
+    "reason": "another room of the same venue (venue counted once)"
+   },
+   "record_overrides": [],
+   "placeholder_values": null,
+   "derived_name": null,
+   "highlight_fields": {
+    "tx_horario_funcionamento": "Opening hours"
+   },
+   "fetched_at": "2026-10-05T21:59:53Z",
+   "number_matched_reported": 410,
+   "features_returned": 410,
+   "features_normalised": 410,
+   "features_included_in_metrics": 39,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 410
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_teatro_cinema_show/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aequipamento_cultura_teatro_cinema_show&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=0",
+     "http_status": 200,
+     "bytes": 455630,
+     "sha256": "13f5fae0ff5eac806f8c38ee1d191e061008477716aced075c2306a846e96f59",
+     "raw_file": "page_0000.json",
+     "features": 410
+    }
+   ]
+  },
+  {
+   "source_id": "sp_geosampa_estacao_metro",
+   "layer": "geoportal:estacao_metro",
+   "type_name_queried": "geoportal:estacao_metro",
+   "layer_check": {
+    "layer_configured": "geoportal:estacao_metro",
+    "type_name_queried": "geoportal:estacao_metro",
+    "layer_in_capabilities": true,
+    "title": "Metrô - Estação",
+    "abstract": "Estações ativas da Companhia do Metropolitano de São Paulo - Metrô.",
+    "keywords": [
+     "v_estacao_metro_trem_gsrv",
+     "features"
+    ],
+    "version_keywords": [],
+    "similar_layers_in_capabilities": [
+     "geoportal:estacao_metro_projetada"
+    ]
+   },
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "service",
+   "category": "metro_train",
+   "subcategory": "metro",
+   "sort_by": null,
+   "page_size": 1000,
+   "id_field": null,
+   "record_filter": null,
+   "field_map": {
+    "name": "nm_estacao_metro_trem",
+    "type": "nm_linha_metro_trem"
+   },
+   "inclusion_rules": null,
+   "subcategory_rules": null,
+   "venue_grouping": null,
+   "record_overrides": [],
+   "placeholder_values": null,
+   "derived_name": null,
+   "highlight_fields": null,
+   "fetched_at": "2026-10-05T21:59:54Z",
+   "number_matched_reported": 94,
+   "features_returned": 94,
+   "features_normalised": 94,
+   "features_included_in_metrics": 94,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 94
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_estacao_metro/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aestacao_metro&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=0",
+     "http_status": 200,
+     "bytes": 44145,
+     "sha256": "00e0912f694329b5eec1c4fe7cf013f751f07142913def54026a954f686ffb46",
+     "raw_file": "page_0000.json",
+     "features": 94
+    }
+   ]
+  },
+  {
+   "source_id": "sp_geosampa_estacao_trem",
+   "layer": "geoportal:estacao_trem",
+   "type_name_queried": "geoportal:estacao_trem",
+   "layer_check": {
+    "layer_configured": "geoportal:estacao_trem",
+    "type_name_queried": "geoportal:estacao_trem",
+    "layer_in_capabilities": true,
+    "title": "Trem Metropolitano - Estação",
+    "abstract": "Estações de trem da Companhia de Trens Metropolitanos (CPTM).",
+    "keywords": [
+     "estacao_trem_v2",
+     "features"
+    ],
+    "version_keywords": [
+     "estacao_trem_v2"
+    ],
+    "similar_layers_in_capabilities": [
+     "geoportal:estacao_trem_projetada"
+    ]
+   },
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "service",
+   "category": "metro_train",
+   "subcategory": "train",
+   "sort_by": null,
+   "page_size": 1000,
+   "id_field": null,
+   "record_filter": null,
+   "field_map": {
+    "name": "nm_estacao_metro_trem",
+    "type": "nm_linha_metro_trem"
+   },
+   "inclusion_rules": null,
+   "subcategory_rules": null,
+   "venue_grouping": null,
+   "record_overrides": [],
+   "placeholder_values": null,
+   "derived_name": null,
+   "highlight_fields": null,
+   "fetched_at": "2026-10-05T21:59:54Z",
+   "number_matched_reported": 109,
+   "features_returned": 109,
+   "features_normalised": 109,
+   "features_included_in_metrics": 109,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 109
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_estacao_trem/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aestacao_trem&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=0",
+     "http_status": 200,
+     "bytes": 51944,
+     "sha256": "038b20d2ff67b6f2463aa7ca1cbce9c720f6f1209f9f67e7cd64af794defe877",
+     "raw_file": "page_0000.json",
+     "features": 109
+    }
+   ]
+  },
+  {
+   "source_id": "sp_geosampa_ponto_onibus",
+   "layer": "geoportal:ponto_onibus",
+   "type_name_queried": "geoportal:ponto_onibus",
+   "layer_check": {
+    "layer_configured": "geoportal:ponto_onibus",
+    "type_name_queried": "geoportal:ponto_onibus",
+    "layer_in_capabilities": true,
+    "title": "Pontos de ônibus",
+    "abstract": "Posição Geográfica de todas as paradas e terminais de ônibus gerenciados pela SPTrans. Também possui todas as estações gerenciadas pelo METRO e CPTM. Dados das linhas e horários obtidos a partir da base GTFS (https://developers.google.com/transit/gtfs/reference?hl=pt-br) gerado diariamente pela SPTrans.",
+    "keywords": [
+     "ponto_onibus",
+     "features"
+    ],
+    "version_keywords": [],
+    "similar_layers_in_capabilities": []
+   },
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "service",
+   "category": "transit",
+   "subcategory": "bus_stop",
+   "sort_by": "cd_identificador_ponto_onibus",
+   "page_size": 1000,
+   "id_field": "cd_identificador_ponto_onibus",
+   "record_filter": null,
+   "field_map": {
+    "name": "nm_ponto_onibus",
+    "address": "tx_endereco_ponto_onibus"
+   },
+   "inclusion_rules": null,
+   "subcategory_rules": null,
+   "venue_grouping": null,
+   "record_overrides": [],
+   "placeholder_values": null,
+   "derived_name": null,
+   "highlight_fields": null,
+   "fetched_at": "2026-10-05T21:59:54Z",
+   "number_matched_reported": 22570,
+   "features_returned": 22570,
+   "features_normalised": 22570,
+   "features_included_in_metrics": 22570,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 22570
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_ponto_onibus/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=0&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 397696,
+     "sha256": "dcb5e529ed4f4496bb3c7b96c34dcd84b651b7bd8b6b94b3ff2750a701447136",
+     "raw_file": "page_0000.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=1000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 399322,
+     "sha256": "1211535a6bb9a9dd0f15937ef8349284bb45733264bef7b23a297d5b7e6eff8c",
+     "raw_file": "page_0001.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=2000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 395863,
+     "sha256": "1907b038b1f5babd086b71716975c6a5b507a726b8ddabf15fa5290c8b1cf648",
+     "raw_file": "page_0002.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=3000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 399701,
+     "sha256": "d8849c613572d8b8de1943d38598e15b1c9272da2ef0eaa92af39aec06f13fbc",
+     "raw_file": "page_0003.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=4000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 396897,
+     "sha256": "3d5d6cdf99ebe108b46b65ecac3a5dc0a7e3bd9c698537dc42ae96e6bc52e966",
+     "raw_file": "page_0004.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=5000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 394089,
+     "sha256": "3ce382cf5766a60e90e69754f8c76eb56d4008cb4152cb9ce85720fb063922ab",
+     "raw_file": "page_0005.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=6000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 396793,
+     "sha256": "260ed020c0fcaed506aa837c48344357912ce05956d11c4bf9b157b0bffc90c8",
+     "raw_file": "page_0006.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=7000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 397633,
+     "sha256": "eb18e13193c1b7f9ce27ef97e94d6eee3ebd924e977061981679d24ea8c4846d",
+     "raw_file": "page_0007.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=8000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 414549,
+     "sha256": "2352967a8b5537b8b9fa71d0d8b3dfbed107f3253185a4518d571a6e59a33ef7",
+     "raw_file": "page_0008.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=9000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 429250,
+     "sha256": "d9a8b31e0520508c52a23f6c2f7c879541b70c6646d9896e1371f9aa81bfb655",
+     "raw_file": "page_0009.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=10000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 427985,
+     "sha256": "87590759a0678c9b64aee753bb6d95558809b4564b9066ed484250e6ff1ba9bc",
+     "raw_file": "page_0010.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=11000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 425230,
+     "sha256": "58f6f29fde58e2d27ba89c37a2f124b8eb7e20b6e4081cb2a4598994065b7aca",
+     "raw_file": "page_0011.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=12000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 426387,
+     "sha256": "a640bc20709fb985d0be19e9700323e05ce3171ad2ac7421a55d3906b0bcd1e7",
+     "raw_file": "page_0012.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=13000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 427170,
+     "sha256": "a9c4e1ac7c5e910290f80719964b81e755191a4133f741456c754bc5f6ad419f",
+     "raw_file": "page_0013.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=14000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 427603,
+     "sha256": "315b0aabaabb0c9b1eadd34b1139222fe623510b6836c5e37d5d0529424318d0",
+     "raw_file": "page_0014.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=15000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 430760,
+     "sha256": "3ac6277ac1031b54ed99943b6db496ef99de61fb72578f8ee4b3e4fc30f7eadd",
+     "raw_file": "page_0015.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=16000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 421684,
+     "sha256": "53b15e4451e561d7ccbefdec5b3e68dc357b0cecea5c185f6672d04e4c6c33ba",
+     "raw_file": "page_0016.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=17000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 427241,
+     "sha256": "c893f5b1f0ac3070d4395ff7f16df98b11b65e2b4c3f9c4118c826925eeabdd0",
+     "raw_file": "page_0017.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=18000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 431275,
+     "sha256": "87db47fee0dcd0a4b8846a48d9a6457687583b526af40f6e47ca62ec419afc25",
+     "raw_file": "page_0018.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=19000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 430184,
+     "sha256": "99133a768cb6dc8b9e607d337eddceb0404e28823ba7acbe79a6cbe43028e6fb",
+     "raw_file": "page_0019.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=20000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 427575,
+     "sha256": "40c55ad9287d550c754b189be848398e4a674eb4fa42143ddc8cd5a4dfc3be9b",
+     "raw_file": "page_0020.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=21000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 424357,
+     "sha256": "9f028d13c4d480593232faf6aa287ea974e5b886f3e8601919c41e2b2c2bdd4f",
+     "raw_file": "page_0021.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aponto_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=22000&SORTBY=cd_identificador_ponto_onibus",
+     "http_status": 200,
+     "bytes": 243251,
+     "sha256": "5b7bbbbbe0070a1507f15d037f156e598a33111cef5e9467a50bd6a61754abc0",
+     "raw_file": "page_0022.json",
+     "features": 570
+    }
+   ]
+  },
+  {
+   "source_id": "sp_geosampa_terminal_onibus",
+   "layer": "geoportal:terminal_onibus",
+   "type_name_queried": "geoportal:terminal_onibus",
+   "layer_check": {
+    "layer_configured": "geoportal:terminal_onibus",
+    "type_name_queried": "geoportal:terminal_onibus",
+    "layer_in_capabilities": true,
+    "title": "Terminal de Ônibus",
+    "abstract": "Identificação dos pontos georreferenciados de Terminais rodoviários e urbanos de ônibus.",
+    "keywords": [
+     "v_terminal_onibus_gsrv",
+     "features"
+    ],
+    "version_keywords": [],
+    "similar_layers_in_capabilities": []
+   },
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "service",
+   "category": "transit",
+   "subcategory": "bus_terminal",
+   "sort_by": null,
+   "page_size": 1000,
+   "id_field": null,
+   "record_filter": null,
+   "field_map": {
+    "name": "nm_terminal",
+    "address": "tx_endereco_terminal",
+    "type": "nm_tipo_terminal"
+   },
+   "inclusion_rules": [
+    {
+     "field": "nm_tipo_terminal",
+     "equals": "RODOVIARIO",
+     "include": false,
+     "reason": "intercity terminal, not daily access"
+    }
+   ],
+   "subcategory_rules": null,
+   "venue_grouping": null,
+   "record_overrides": [],
+   "placeholder_values": null,
+   "derived_name": null,
+   "highlight_fields": null,
+   "fetched_at": "2026-10-05T22:00:06Z",
+   "number_matched_reported": 50,
+   "features_returned": 50,
+   "features_normalised": 50,
+   "features_included_in_metrics": 47,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 50
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_terminal_onibus/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aterminal_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=0",
+     "http_status": 200,
+     "bytes": 22268,
+     "sha256": "a5f0fd2de94e0f559a0f65612e67d6c7991bc818241ed8fa8351ffbbf376a7cf",
+     "raw_file": "page_0000.json",
+     "features": 50
+    }
+   ]
+  },
+  {
+   "source_id": "sp_geosampa_distrito_municipal",
+   "layer": "geoportal:distrito_municipal",
+   "type_name_queried": "geoportal:distrito_municipal",
+   "layer_check": {
+    "layer_configured": "geoportal:distrito_municipal",
+    "type_name_queried": "geoportal:distrito_municipal",
+    "layer_in_capabilities": true,
+    "title": "Distrito",
+    "abstract": "Os distritos foram criados mediante a Lei nº 11.220/1992. Seus limites foram estabelecidos a partir de estudos elaborados por diversos órgãos do Executivo municipal, tendo em conta fatores físico-territoriais, demográficos, urbanísticos, econômicos e político-administrativos.",
+    "keywords": [
+     "v_distrito_municipal_gsrv",
+     "features"
+    ],
+    "version_keywords": [],
+    "similar_layers_in_capabilities": []
+   },
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "context",
+   "category": null,
+   "subcategory": null,
+   "sort_by": null,
+   "page_size": 1000,
+   "id_field": null,
+   "record_filter": null,
+   "field_map": {
+    "name": "nm_distrito_municipal"
+   },
+   "inclusion_rules": null,
+   "subcategory_rules": null,
+   "venue_grouping": null,
+   "record_overrides": [],
+   "placeholder_values": null,
+   "derived_name": null,
+   "highlight_fields": null,
+   "fetched_at": "2026-10-05T22:00:06Z",
+   "number_matched_reported": 96,
+   "features_returned": 96,
+   "features_normalised": null,
+   "features_included_in_metrics": null,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 135678
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_distrito_municipal/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adistrito_municipal&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=0",
+     "http_status": 200,
+     "bytes": 3830101,
+     "sha256": "fd45bb55e77adf149fb160a9b59d6fff4c68116cfa775cea3228920ebe6bb338",
+     "raw_file": "page_0000.json",
+     "features": 96
+    }
+   ]
+  },
+  {
+   "source_id": "sp_geosampa_area_contexto",
+   "layer": "geoportal:area_contexto",
+   "type_name_queried": "geoportal:area_contexto",
+   "layer_check": {
+    "layer_configured": "geoportal:area_contexto",
+    "type_name_queried": "geoportal:area_contexto",
+    "layer_in_capabilities": true,
+    "title": "Municípios do Estado de São Paulo",
+    "abstract": "Malha de municípios do Estado de São Paulo e outros polígonos de contextualização regional usados na produção de mapas base do Sistema de Informações Geográficas do Município de São Paulo (SIG-SP). Limites do município de São Paulo e de municípios adjacentes foram ajustados ao limite municipal do Mapa Digital da Cidade (MDC).",
+    "keywords": [
+     "area_contexto_v2",
+     "features"
+    ],
+    "version_keywords": [
+     "area_contexto_v2"
+    ],
+    "similar_layers_in_capabilities": []
+   },
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "reference",
+   "category": null,
+   "subcategory": null,
+   "sort_by": "cd_identificador_area_contexto",
+   "page_size": 1000,
+   "id_field": "cd_identificador_area_contexto",
+   "record_filter": {
+    "field": "cd_identificador_area_contexto",
+    "equals": 27,
+    "records_in_layer": 1359,
+    "records_kept": 1
+   },
+   "field_map": null,
+   "inclusion_rules": null,
+   "subcategory_rules": null,
+   "venue_grouping": null,
+   "record_overrides": [],
+   "placeholder_values": null,
+   "derived_name": null,
+   "highlight_fields": null,
+   "fetched_at": "2026-10-05T22:00:10Z",
+   "number_matched_reported": 1,
+   "features_returned": 1,
+   "features_normalised": null,
+   "features_included_in_metrics": null,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 19528
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_area_contexto/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aarea_contexto&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=0&SORTBY=cd_identificador_area_contexto&FILTER=%3Cfes%3AFilter+xmlns%3Afes%3D%22http%3A%2F%2Fwww.opengis.net%2Ffes%2F2.0%22%3E%3Cfes%3APropertyIsEqualTo%3E%3Cfes%3AValueReference%3Ecd_identificador_area_contexto%3C%2Ffes%3AValueReference%3E%3Cfes%3ALiteral%3E27%3C%2Ffes%3ALiteral%3E%3C%2Ffes%3APropertyIsEqualTo%3E%3C%2Ffes%3AFilter%3E",
+     "http_status": 200,
+     "bytes": 543013,
+     "sha256": "ad3c4ed0b2cf27d4e472c5d6ae4af0508edc363006b660d544e780b10b0f49dc",
+     "raw_file": "page_0000.json",
+     "features": 1
+    }
+   ]
+  },
+  {
+   "source_id": "sp_geosampa_corredor_onibus",
+   "layer": "geoportal:corredor_onibus",
+   "type_name_queried": "geoportal:corredor_onibus",
+   "layer_check": {
+    "layer_configured": "geoportal:corredor_onibus",
+    "type_name_queried": "geoportal:corredor_onibus",
+    "layer_in_capabilities": true,
+    "title": "Corredores",
+    "abstract": "Corredores de Ônibus da cidade de São Paulo de acordo com levantamento realizado pelo Planejamento da SPTrans. Situam-se à esquerda da pista e possuem paradas maiores. Táxis podem circular de 2ª a 6ª, no horário das 9h00 às 16h00, com passageiro, de 2ª a 6ª, no horário das 20h00 às 06h00 do dia seguinte, com ou sem passageiro e aos sábados, domingos e feriados por período integral, com ou sem passageiro.",
+    "keywords": [
+     "corredor_onibus",
+     "features"
+    ],
+    "version_keywords": [],
+    "similar_layers_in_capabilities": []
+   },
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "context",
+   "category": null,
+   "subcategory": null,
+   "sort_by": null,
+   "page_size": 1000,
+   "id_field": null,
+   "record_filter": {
+    "field": "dc_tipo_status_corredor_onibus",
+    "equals": "Em Operação",
+    "records_in_layer": 45,
+    "records_kept": 40
+   },
+   "field_map": {
+    "name": "nm_corredor",
+    "type": "nm_origem"
+   },
+   "inclusion_rules": null,
+   "subcategory_rules": null,
+   "venue_grouping": null,
+   "record_overrides": [],
+   "placeholder_values": null,
+   "derived_name": null,
+   "highlight_fields": null,
+   "fetched_at": "2026-10-05T22:00:11Z",
+   "number_matched_reported": 40,
+   "features_returned": 40,
+   "features_normalised": null,
+   "features_included_in_metrics": null,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 2463
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_corredor_onibus/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Acorredor_onibus&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=0&FILTER=%3Cfes%3AFilter+xmlns%3Afes%3D%22http%3A%2F%2Fwww.opengis.net%2Ffes%2F2.0%22%3E%3Cfes%3APropertyIsEqualTo%3E%3Cfes%3AValueReference%3Edc_tipo_status_corredor_onibus%3C%2Ffes%3AValueReference%3E%3Cfes%3ALiteral%3EEm+Opera%C3%A7%C3%A3o%3C%2Ffes%3ALiteral%3E%3C%2Ffes%3APropertyIsEqualTo%3E%3C%2Ffes%3AFilter%3E",
+     "http_status": 200,
+     "bytes": 85592,
+     "sha256": "1ad5c3ba0978b5b30fbb0f7198d638e0e46edf20e8e330f43e2a378a39f3f921",
+     "raw_file": "page_0000.json",
+     "features": 40
+    }
+   ]
+  },
+  {
+   "source_id": "sp_geosampa_cras_coverage",
+   "layer": "geoportal:centro_referencia_assistencia_social",
+   "type_name_queried": "geoportal:centro_referencia_assistencia_social",
+   "layer_check": {
+    "layer_configured": "geoportal:centro_referencia_assistencia_social",
+    "type_name_queried": "geoportal:centro_referencia_assistencia_social",
+    "layer_in_capabilities": true,
+    "title": "Centro de Referência de Assistência Social",
+    "abstract": "O Centro de Referência de Assistência Social – CRAS é uma unidade pública estatal de base territorial, localizada em áreas de vulnerabilidade social. Executa serviços de proteção social básica, organiza e coordena a rede de serviços socioassistenciais, locais da política de assistência social. Dada a sua capilaridade nos territórios se caracteriza como principal porta de entrada dos usuários à rede de proteção social do Sistema Único de Assistência Social – SUAS.",
+    "keywords": [
+     "centro_referencia_assistencia_social",
+     "features"
+    ],
+    "version_keywords": [],
+    "similar_layers_in_capabilities": []
+   },
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "reference",
+   "category": null,
+   "subcategory": null,
+   "sort_by": null,
+   "page_size": 1000,
+   "id_field": null,
+   "record_filter": null,
+   "field_map": null,
+   "inclusion_rules": null,
+   "subcategory_rules": null,
+   "venue_grouping": null,
+   "record_overrides": [],
+   "placeholder_values": null,
+   "derived_name": null,
+   "highlight_fields": null,
+   "fetched_at": "2026-10-05T22:00:11Z",
+   "number_matched_reported": 58,
+   "features_returned": 58,
+   "features_normalised": null,
+   "features_included_in_metrics": null,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 56115
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_cras_coverage/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Acentro_referencia_assistencia_social&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=0",
+     "http_status": 200,
+     "bytes": 1482678,
+     "sha256": "394fb6b61a4ac3b55b0b5a995a46d4615b9dc53508427f85149c60114d949d21",
+     "raw_file": "page_0000.json",
+     "features": 58
+    }
+   ]
+  },
+  {
+   "source_id": "sp_geosampa_densidade_demografica",
+   "layer": "geoportal:densidade_demografica",
+   "type_name_queried": "geoportal:densidade_demografica",
+   "layer_check": {
+    "layer_configured": "geoportal:densidade_demografica",
+    "type_name_queried": "geoportal:densidade_demografica",
+    "layer_in_capabilities": true,
+    "title": "Densidade Demográfica 2022",
+    "abstract": "Mapa temático produzido a partir dos setores censitários e da população relativos ao censo. É o resultado da divisão do total de habitantes pela área territorial.",
+    "keywords": [
+     "setor_censitario_densidadedemografica",
+     "features"
+    ],
+    "version_keywords": [],
+    "similar_layers_in_capabilities": []
+   },
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "demand",
+   "category": null,
+   "subcategory": null,
+   "sort_by": "cd_identificador",
+   "page_size": 1000,
+   "id_field": "cd_original_setor_censitario",
+   "record_filter": null,
+   "field_map": null,
+   "inclusion_rules": null,
+   "subcategory_rules": null,
+   "venue_grouping": null,
+   "record_overrides": [],
+   "placeholder_values": null,
+   "derived_name": null,
+   "highlight_fields": null,
+   "fetched_at": "2026-10-05T22:00:12Z",
+   "number_matched_reported": 27301,
+   "features_returned": 27301,
+   "features_normalised": null,
+   "features_included_in_metrics": null,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 967356
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_densidade_demografica/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=0&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1566354,
+     "sha256": "bf71515295c7382a9ddd91c99e63a76ae4632066fec6612667a24ae8a01bcd76",
+     "raw_file": "page_0000.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=1000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1880868,
+     "sha256": "4b254d7bf7cf8c9b73201de3d3eb36981b640cbd4c26190698f4eb162a73d679",
+     "raw_file": "page_0001.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=2000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1457299,
+     "sha256": "69ce70a0d26abb99377657e6a617a23a6379cac440f8e47a74d45b6906bdf218",
+     "raw_file": "page_0002.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=3000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1859741,
+     "sha256": "7417244ff0eff1dcf437125cf6f8862fc69c74328ea9fb0d8af41a696850d30b",
+     "raw_file": "page_0003.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=4000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1667251,
+     "sha256": "b0f378a107e7b35dd97661c542037ff6c83e1a7454f5026053392958a8c08c9f",
+     "raw_file": "page_0004.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=5000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1816867,
+     "sha256": "4d261e6ef45ceb72fd4a6e63889423cb40d6ad7d66e98562ed6a0ba492829747",
+     "raw_file": "page_0005.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=6000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1752166,
+     "sha256": "90de5645fe21bc8ec95cc266e9fe61108eec0391ae9df93bde8a104310d0278e",
+     "raw_file": "page_0006.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=7000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1898371,
+     "sha256": "6e93b16e500bcde56df0dd26805de768cac2178d20b3048c743d8f5ba33e4da2",
+     "raw_file": "page_0007.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=8000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1862030,
+     "sha256": "0066dacab508a1667e0e7ca14809244b6c5a2f4ab35812ba4ec7c02c3f8183d5",
+     "raw_file": "page_0008.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=9000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 2011052,
+     "sha256": "2e22d52fd30d6288e38d4ff2e226fa4b1790b245ac48afb367a9dd9c11838cf9",
+     "raw_file": "page_0009.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=10000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1839953,
+     "sha256": "5f23129710706c1af56f7fc9d8c9f22646ad50349cd8a0fcf03f7e600609a73d",
+     "raw_file": "page_0010.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=11000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1566004,
+     "sha256": "ea03e01afd380d6e1c3cb5c8ee1ec7c15b6b284fa974d1436298c02870439504",
+     "raw_file": "page_0011.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=12000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1582960,
+     "sha256": "3ad9e2fb48fb5daac61bcd009c02abdb0fb45684f44d9db2c5a8ec61bdcae205",
+     "raw_file": "page_0012.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=13000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1858853,
+     "sha256": "427c785705a28fa7023a644cc1c2983a6a8d0871c418f72e4bbc2b74d5ee8245",
+     "raw_file": "page_0013.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=14000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1764384,
+     "sha256": "016fb29b0b11e92eafeedf0fdb2d6d9eb392c7c7ddb41f1139d6b9de60a4df57",
+     "raw_file": "page_0014.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=15000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1691093,
+     "sha256": "61e41e95b5686dc6a2cd9736e794832c5ee24b76817fe22018b4956150f1cb80",
+     "raw_file": "page_0015.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=16000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1672914,
+     "sha256": "d0e1cb3d57a46cd8367e8f508bd2822ff8ec958ce6d1d00c3a597c0d247409ee",
+     "raw_file": "page_0016.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=17000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 2219074,
+     "sha256": "148826cdf9ebd74ff75bbf5d945545f06565d40da7b6d30504b614d670224406",
+     "raw_file": "page_0017.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=18000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1688279,
+     "sha256": "d1fe1de706c49f5042161b3836833f6e48a6c4047adaaa91fccf2def2a36daa5",
+     "raw_file": "page_0018.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=19000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1693785,
+     "sha256": "e0dabc2cbece50a4d74468e7546706570a0bb772e00624cf7cf502231631587b",
+     "raw_file": "page_0019.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=20000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1589626,
+     "sha256": "ab8324d72c0d16d74050bf86d1ed7e68dd2630c38c01f46a42990ba501e5509e",
+     "raw_file": "page_0020.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=21000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1532149,
+     "sha256": "1139f9bc580d6ea797ea45d6a12226a3f418fcad559e3b5f668819df5f540322",
+     "raw_file": "page_0021.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=22000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1612321,
+     "sha256": "55a3f011a19c447d3ff2e460136b928f2f117bc93556a23c0670d8d941b8dd1f",
+     "raw_file": "page_0022.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=23000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1588135,
+     "sha256": "57d3ae1b19c94e2c2d9e318f4700c2d93de8df7f1628a5e7f43a9c3a583faabb",
+     "raw_file": "page_0023.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=24000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 2005934,
+     "sha256": "8b1b5fd6e5abf4a7d475e7527c94f26df4cd8b5de2d1f8d48c55982b782c6acb",
+     "raw_file": "page_0024.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=25000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1663021,
+     "sha256": "dd2dc69afb718da3b00bdb500cb28153f10e1d222424d8005db49dfc7ad6dd5a",
+     "raw_file": "page_0025.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=26000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 1868264,
+     "sha256": "f9d220144855d529864512baba6add5cd8af5ff1c3410d4b4584ad4e943830db",
+     "raw_file": "page_0026.json",
+     "features": 1000
+    },
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Adensidade_demografica&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=27000&SORTBY=cd_identificador",
+     "http_status": 200,
+     "bytes": 449065,
+     "sha256": "4b5a9dcd48ef46c6f1e2f49a9f214643063c50f09f1cc042017ea96647cfeb3e",
+     "raw_file": "page_0027.json",
+     "features": 301
+    }
+   ]
+  },
+  {
+   "source_id": "sp_ibge_basico",
+   "layer": "Agregados_por_setores_basico_BR.csv",
+   "endpoint_url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_basico_BR_20260520.zip",
+   "role": "demand",
+   "protocol": "csv",
+   "csv": {
+    "member": "Agregados_por_setores_basico_BR.csv",
+    "encoding": "latin-1",
+    "delimiter": ";",
+    "decimal": ",",
+    "key": "CD_SETOR",
+    "columns": [
+     "v0001",
+     "v0007"
+    ]
+   },
+   "fetched_at": "2026-10-05T22:01:07Z",
+   "rows_in_file": 468099,
+   "rows_kept": 27301,
+   "features_returned": 27301,
+   "features_included_in_metrics": null,
+   "count_check": "not applicable (file download)",
+   "crs": {
+    "action": "not applicable (table)"
+   },
+   "raw_dir": "sp_ibge_basico/",
+   "pages": [
+    {
+     "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_basico_BR_20260520.zip",
+     "http_status": 200,
+     "bytes": 15418417,
+     "sha256": "ec04624286233d699ebe69c7b9625744a1cfdfc8352126f30245bdef5e9bdc63",
+     "raw_file": "Agregados_por_setores_basico_BR_20260520.zip"
+    }
+   ]
+  },
+  {
+   "source_id": "sp_ibge_renda",
+   "layer": "Agregados_por_setores_renda_responsavel_BR.csv",
+   "endpoint_url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios_Rendimento_do_Responsavel/Agregados_por_setores_renda_responsavel_BR_20260508_csv.zip",
+   "role": "demand",
+   "protocol": "csv",
+   "csv": {
+    "member": "Agregados_por_setores_renda_responsavel_BR.csv",
+    "encoding": "utf-8",
+    "delimiter": ";",
+    "decimal": ".",
+    "key": "CD_SETOR",
+    "columns": [
+     "V06001",
+     "V06004",
+     "V06006"
+    ]
+   },
+   "fetched_at": "2026-10-05T22:01:13Z",
+   "rows_in_file": 458772,
+   "rows_kept": 26889,
+   "features_returned": 26889,
+   "features_included_in_metrics": null,
+   "count_check": "not applicable (file download)",
+   "crs": {
+    "action": "not applicable (table)"
+   },
+   "raw_dir": "sp_ibge_renda/",
+   "pages": [
+    {
+     "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios_Rendimento_do_Responsavel/Agregados_por_setores_renda_responsavel_BR_20260508_csv.zip",
+     "http_status": 200,
+     "bytes": 9370011,
+     "sha256": "141c83e7635674e7e2c941e55f98811e538fcbf2e1e1125b0aa7892c260f4a23",
+     "raw_file": "Agregados_por_setores_renda_responsavel_BR_20260508_csv.zip"
+    }
+   ]
+  }
+ ],
+ "raw_storage": {
+  "committed": false,
+  "local_path": "pipeline/cache/raw/2026-10-05-111a67/",
+  "github_artifact": "raw-2026-10-05-111a67",
+  "artifact_retention_days": 90,
+  "release": null,
+  "note": "Raw responses are not committed; page hashes (sha256) are listed per source. Snapshot runs get their raw files attached to a GitHub Release."
+ },
+ "errors": [],
+ "outputs": [
+  "quality.json",
+  "run.json",
+  "services/sp_geosampa_educacao_rede_publica.geojson",
+  "services/sp_geosampa_educacao_infantil.geojson",
+  "services/sp_geosampa_educacao_ceu.geojson",
+  "services/sp_geosampa_saude_ubs.geojson",
+  "services/sp_geosampa_cras.geojson",
+  "services/sp_geosampa_parque_municipal.geojson",
+  "services/sp_geosampa_praca_largo.geojson",
+  "services/sp_geosampa_bibliotecas.geojson",
+  "services/sp_geosampa_espacos_culturais.geojson",
+  "services/sp_geosampa_museus.geojson",
+  "services/sp_geosampa_teatro_cinema_show.geojson",
+  "services/sp_geosampa_estacao_metro.geojson",
+  "services/sp_geosampa_estacao_trem.geojson",
+  "services/sp_geosampa_ponto_onibus.geojson",
+  "services/sp_geosampa_terminal_onibus.geojson",
+  "hexagons.geojson",
+  "boundary.geojson",
+  "context/sp_geosampa_distrito_municipal.geojson",
+  "context/sp_geosampa_corredor_onibus.geojson"
+ ]
+}
