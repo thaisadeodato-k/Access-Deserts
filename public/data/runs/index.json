@@ -1,9 +1,18 @@
 {
  "schema_version": 1,
  "latest": {
-  "sp": "2026-10-05-42d381"
+  "sp": "2026-10-05-25c2f7"
  },
  "runs": [
+  {
+   "run_id": "2026-10-05-25c2f7",
+   "city_code": "sp",
+   "started_at": "2026-10-05T18:37:01Z",
+   "finished_at": "2026-10-05T18:37:58Z",
+   "status": "completed",
+   "snapshot": false,
+   "path": "runs/2026-10-05-25c2f7/"
+  },
   {
    "run_id": "2026-10-05-42d381",
    "city_code": "sp",

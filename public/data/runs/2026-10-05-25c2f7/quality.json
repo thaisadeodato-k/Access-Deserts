@@ -1,0 +1,2300 @@
+{
+ "run_id": "2026-10-05-25c2f7",
+ "city_code": "sp",
+ "generated_at": "2026-10-05T18:37:58Z",
+ "sources": [
+  {
+   "source_id": "sp_geosampa_educacao_rede_publica",
+   "name": "Public primary and secondary schools",
+   "publisher": "GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)",
+   "layer": "geoportal:equipamento_educacao_rede_publica",
+   "role": "service",
+   "category": "school",
+   "map_initially_visible": true,
+   "layer_check": {
+    "layer_configured": "geoportal:equipamento_educacao_rede_publica",
+    "type_name_queried": "geoportal:equipamento_educacao_rede_publica",
+    "layer_in_capabilities": true,
+    "title": "Ensino Fundamental e Médio",
+    "abstract": "Unidades de ensino fundamental e médio.",
+    "keywords": [
+     "features",
+     "equipamento_educacao_rede_publica_v2"
+    ],
+    "version_keywords": [
+     "equipamento_educacao_rede_publica_v2"
+    ],
+    "similar_layers_in_capabilities": []
+   },
+   "record_filter": null,
+   "fetched_at": "2026-10-05T18:37:02Z",
+   "record_count": 1590,
+   "findings": [
+    {
+     "kind": "empty_field",
+     "highlight": true,
+     "field": "tx_horario_funcionamento",
+     "label": "Opening hours",
+     "pct_empty": 100.0,
+     "text": "Opening hours (tx_horario_funcionamento) is 100% empty in this run."
+    }
+   ],
+   "inclusion": {
+    "included_in_metrics": 1590,
+    "excluded_from_metrics": 0,
+    "excluded_by_reason": {},
+    "rules": [
+     {
+      "field": "geometry",
+      "equals": null,
+      "include": false,
+      "reason": "missing coordinates",
+      "matched": 0,
+      "built_in": true
+     }
+    ],
+    "overrides": []
+   },
+   "venue_grouping": null,
+   "change_vs_previous": {
+    "added": 0,
+    "removed": 0,
+    "note": null
+   },
+   "pct_missing_coordinates": 0.0,
+   "pct_outside_city_boundary": 0.0,
+   "pct_outside_city_boundary_note": "Records whose geometry does not intersect the city boundary (union of sp_geosampa_distrito_municipal).",
+   "outside_city_boundary": {
+    "with_geometry": 1590,
+    "outside": 0,
+    "examples": [],
+    "pct_outside": 0.0
+   },
+   "duplicates_flagged": null,
+   "pct_classified_by_ai": null,
+   "fields_over_empty_threshold": {
+    "tx_horario_funcionamento": 100.0
+   },
+   "empty_threshold_pct": 20.0,
+   "attribute_empty_pct": {
+    "cd_identificador": 0.0,
+    "cd_identificador_tema_equipamento": 0.0,
+    "nm_tema_equipamento": 0.0,
+    "cd_identificador_rede_equipamento": 0.0,
+    "nm_rede_equipamento": 0.0,
+    "tx_rede_equipamento": 0.0,
+    "cd_identificador_tipo_equipamento": 0.0,
+    "nm_tipo_equipamento": 0.0,
+    "tx_tipo_equipamento": 0.0,
+    "cd_identificador_classe_equipamento": 0.0,
+    "nm_classe_equipamento": 0.0,
+    "tx_classe_equipamento": 0.0,
+    "cd_identificador_esfera_administrativa_equipamento": 0.0,
+    "nm_esfera_administrativa_equipamento": 0.0,
+    "tx_esfera_administrativa_equipamento": 0.0,
+    "cd_equipamento": 0.0,
+    "nm_equipamento": 0.0,
+    "tx_endereco_equipamento": 0.0,
+    "nm_bairro_equipamento": 0.0,
+    "cd_cep_equipamento": 0.0,
+    "tx_horario_funcionamento": 100.0,
+    "tx_numero_telefone": 1.51,
+    "cd_equipamento_base_origem": 0.0
+   },
+   "census_suppression": null,
+   "internal_hosts_in_metadata": [],
+   "internal_hosts_in_data": [],
+   "confidence": null,
+   "confidence_rule": null,
+   "pending": {
+    "duplicates_flagged": "Phase 7 (deduplication)",
+    "pct_classified_by_ai": "Phase 7 (AI classification)",
+    "confidence": "Phase 7 (confidence rules)",
+    "census_suppression": "Not applicable to this source (census sources only, Phase 5)."
+   }
+  },
+  {
+   "source_id": "sp_geosampa_educacao_infantil",
+   "name": "Public early-childhood education",
+   "publisher": "GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)",
+   "layer": "geoportal:equipamento_educacao_infantil_rede_publica",
+   "role": "service",
+   "category": "school",
+   "map_initially_visible": true,
+   "layer_check": {
+    "layer_configured": "geoportal:equipamento_educacao_infantil_rede_publica",
+    "type_name_queried": "geoportal:equipamento_educacao_infantil_rede_publica",
+    "layer_in_capabilities": true,
+    "title": "Educação Infantil",
+    "abstract": "Unidades de ensino públicas de Educação Infantil.",
+    "keywords": [
+     "equipamento_educacao_infantil_rede_publica_v2",
+     "features"
+    ],
+    "version_keywords": [
+     "equipamento_educacao_infantil_rede_publica_v2"
+    ],
+    "similar_layers_in_capabilities": []
+   },
+   "record_filter": null,
+   "fetched_at": "2026-10-05T18:37:05Z",
+   "record_count": 3047,
+   "findings": [
+    {
+     "kind": "empty_field",
+     "highlight": true,
+     "field": "tx_horario_funcionamento",
+     "label": "Opening hours",
+     "pct_empty": 100.0,
+     "text": "Opening hours (tx_horario_funcionamento) is 100% empty in this run."
+    }
+   ],
+   "inclusion": {
+    "included_in_metrics": 3047,
+    "excluded_from_metrics": 0,
+    "excluded_by_reason": {},
+    "rules": [
+     {
+      "field": "geometry",
+      "equals": null,
+      "include": false,
+      "reason": "missing coordinates",
+      "matched": 0,
+      "built_in": true
+     }
+    ],
+    "overrides": []
+   },
+   "venue_grouping": null,
+   "change_vs_previous": {
+    "added": 0,
+    "removed": 0,
+    "note": null
+   },
+   "pct_missing_coordinates": 0.0,
+   "pct_outside_city_boundary": 0.0,
+   "pct_outside_city_boundary_note": "Records whose geometry does not intersect the city boundary (union of sp_geosampa_distrito_municipal).",
+   "outside_city_boundary": {
+    "with_geometry": 3047,
+    "outside": 0,
+    "examples": [],
+    "pct_outside": 0.0
+   },
+   "duplicates_flagged": null,
+   "pct_classified_by_ai": null,
+   "fields_over_empty_threshold": {
+    "tx_horario_funcionamento": 100.0
+   },
+   "empty_threshold_pct": 20.0,
+   "attribute_empty_pct": {
+    "cd_identificador": 0.0,
+    "cd_identificador_tema_equipamento": 0.0,
+    "nm_tema_equipamento": 0.0,
+    "cd_identificador_rede_equipamento": 0.0,
+    "nm_rede_equipamento": 0.0,
+    "tx_rede_equipamento": 0.0,
+    "cd_identificador_tipo_equipamento": 0.0,
+    "nm_tipo_equipamento": 0.0,
+    "tx_tipo_equipamento": 0.0,
+    "cd_identificador_classe_equipamento": 0.0,
+    "nm_classe_equipamento": 0.0,
+    "tx_classe_equipamento": 0.0,
+    "cd_identificador_esfera_administrativa_equipamento": 0.0,
+    "nm_esfera_administrativa_equipamento": 0.0,
+    "tx_esfera_administrativa_equipamento": 0.0,
+    "cd_equipamento": 0.0,
+    "nm_equipamento": 0.0,
+    "tx_endereco_equipamento": 0.0,
+    "nm_bairro_equipamento": 0.0,
+    "cd_cep_equipamento": 0.0,
+    "tx_horario_funcionamento": 100.0,
+    "tx_numero_telefone": 4.33,
+    "cd_equipamento_base_origem": 0.0
+   },
+   "census_suppression": null,
+   "internal_hosts_in_metadata": [],
+   "internal_hosts_in_data": [],
+   "confidence": null,
+   "confidence_rule": null,
+   "pending": {
+    "duplicates_flagged": "Phase 7 (deduplication)",
+    "pct_classified_by_ai": "Phase 7 (AI classification)",
+    "confidence": "Phase 7 (confidence rules)",
+    "census_suppression": "Not applicable to this source (census sources only, Phase 5)."
+   }
+  },
+  {
+   "source_id": "sp_geosampa_educacao_ceu",
+   "name": "CEU (Unified Educational Centres)",
+   "publisher": "GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)",
+   "layer": "geoportal:equipamento_educacao_ceu",
+   "role": "service",
+   "category": "school",
+   "map_initially_visible": true,
+   "layer_check": {
+    "layer_configured": "geoportal:equipamento_educacao_ceu",
+    "type_name_queried": "geoportal:equipamento_educacao_ceu",
+    "layer_in_capabilities": true,
+    "title": "CEU(Centro Educacional Unificado)",
+    "abstract": "Unidades de ensino CEU(Centro Educacional Unificado).",
+    "keywords": [
+     "features",
+     "equipamento_educacao_ceu_v2"
+    ],
+    "version_keywords": [
+     "equipamento_educacao_ceu_v2"
+    ],
+    "similar_layers_in_capabilities": []
+   },
+   "record_filter": null,
+   "fetched_at": "2026-10-05T18:37:09Z",
+   "record_count": 150,
+   "findings": [
+    {
+     "kind": "empty_field",
+     "highlight": true,
+     "field": "tx_horario_funcionamento",
+     "label": "Opening hours",
+     "pct_empty": 100.0,
+     "text": "Opening hours (tx_horario_funcionamento) is 100% empty in this run."
+    }
+   ],
+   "inclusion": {
+    "included_in_metrics": 150,
+    "excluded_from_metrics": 0,
+    "excluded_by_reason": {},
+    "rules": [
+     {
+      "field": "geometry",
+      "equals": null,
+      "include": false,
+      "reason": "missing coordinates",
+      "matched": 0,
+      "built_in": true
+     }
+    ],
+    "overrides": []
+   },
+   "venue_grouping": null,
+   "change_vs_previous": {
+    "added": 0,
+    "removed": 0,
+    "note": null
+   },
+   "pct_missing_coordinates": 0.0,
+   "pct_outside_city_boundary": 0.0,
+   "pct_outside_city_boundary_note": "Records whose geometry does not intersect the city boundary (union of sp_geosampa_distrito_municipal).",
+   "outside_city_boundary": {
+    "with_geometry": 150,
+    "outside": 0,
+    "examples": [],
+    "pct_outside": 0.0
+   },
+   "duplicates_flagged": null,
+   "pct_classified_by_ai": null,
+   "fields_over_empty_threshold": {
+    "tx_horario_funcionamento": 100.0
+   },
+   "empty_threshold_pct": 20.0,
+   "attribute_empty_pct": {
+    "cd_identificador": 0.0,
+    "cd_identificador_tema_equipamento": 0.0,
+    "nm_tema_equipamento": 0.0,
+    "cd_identificador_rede_equipamento": 0.0,
+    "nm_rede_equipamento": 0.0,
+    "tx_rede_equipamento": 0.0,
+    "cd_identificador_tipo_equipamento": 0.0,
+    "nm_tipo_equipamento": 0.0,
+    "tx_tipo_equipamento": 0.0,
+    "cd_identificador_classe_equipamento": 0.0,
+    "nm_classe_equipamento": 0.0,
+    "tx_classe_equipamento": 0.0,
+    "cd_identificador_esfera_administrativa_equipamento": 0.0,
+    "nm_esfera_administrativa_equipamento": 0.0,
+    "tx_esfera_administrativa_equipamento": 0.0,
+    "cd_equipamento": 0.0,
+    "nm_equipamento": 0.0,
+    "tx_endereco_equipamento": 0.0,
+    "nm_bairro_equipamento": 0.0,
+    "cd_cep_equipamento": 0.0,
+    "tx_horario_funcionamento": 100.0,
+    "tx_numero_telefone": 4.67,
+    "cd_equipamento_base_origem": 0.0
+   },
+   "census_suppression": null,
+   "internal_hosts_in_metadata": [],
+   "internal_hosts_in_data": [],
+   "confidence": null,
+   "confidence_rule": null,
+   "pending": {
+    "duplicates_flagged": "Phase 7 (deduplication)",
+    "pct_classified_by_ai": "Phase 7 (AI classification)",
+    "confidence": "Phase 7 (confidence rules)",
+    "census_suppression": "Not applicable to this source (census sources only, Phase 5)."
+   }
+  },
+  {
+   "source_id": "sp_geosampa_saude_ubs",
+   "name": "Basic health units (UBS / health posts / health centres)",
+   "publisher": "GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)",
+   "layer": "geoportal:equipamento_saude_ubs_posto_centro",
+   "role": "service",
+   "category": "health_ubs",
+   "map_initially_visible": true,
+   "layer_check": {
+    "layer_configured": "geoportal:equipamento_saude_ubs_posto_centro",
+    "type_name_queried": "geoportal:equipamento_saude_ubs_posto_centro",
+    "layer_in_capabilities": true,
+    "title": "UBS/Posto/Centro de Saúde",
+    "abstract": "UBS, Postos ou Centros de Saúde do Cadastro de estabelecimentos de saúde municipais, estaduais e privados.",
+    "keywords": [
+     "equipamento_saude_ubs_posto_centro_v2",
+     "features"
+    ],
+    "version_keywords": [
+     "equipamento_saude_ubs_posto_centro_v2"
+    ],
+    "similar_layers_in_capabilities": []
+   },
+   "record_filter": null,
+   "fetched_at": "2026-10-05T18:37:09Z",
+   "record_count": 483,
+   "findings": [
+    {
+     "kind": "empty_field",
+     "highlight": true,
+     "field": "tx_horario_funcionamento",
+     "label": "Opening hours",
+     "pct_empty": 100.0,
+     "text": "Opening hours (tx_horario_funcionamento) is 100% empty in this run."
+    },
+    {
+     "kind": "include_rule_without_effect",
+     "highlight": false,
+     "rule_reason": "state-run (public service)",
+     "count": 2,
+     "records": [
+      {
+       "feature_id": "equipamento_saude_ubs_posto_centro.120360",
+       "name": "CS ESCOLA GERALDO DE PAULA SOUZA",
+       "equipment_type": "SEM TIPO",
+       "administrative_sphere": "Estadual"
+      },
+      {
+       "feature_id": "equipamento_saude_ubs_posto_centro.120361",
+       "name": "CS ESCOLA SAMUEL BARNSLEY PESSOA",
+       "equipment_type": "SEM TIPO",
+       "administrative_sphere": "Estadual"
+      }
+     ],
+     "text": "The inclusion rule \"state-run (public service)\" (nm_esfera_administrativa_equipamento = Estadual) matches 2 record(s), but 2 of them are excluded by other rules (exclusion takes precedence): CS ESCOLA GERALDO DE PAULA SOUZA (Estadual); CS ESCOLA SAMUEL BARNSLEY PESSOA (Estadual)."
+    },
+    {
+     "kind": "rule_matches",
+     "highlight": false,
+     "rule_reason": "private provider",
+     "count": 2,
+     "records": [
+      {
+       "feature_id": "equipamento_saude_ubs_posto_centro.120359",
+       "name": "CS ESCOLA BARRA FUNDA - ALEXANDRE VRANJAC",
+       "equipment_type": "SEM TIPO",
+       "administrative_sphere": "Privado"
+      },
+      {
+       "feature_id": "equipamento_saude_ubs_posto_centro.120480",
+       "name": "OSEC",
+       "equipment_type": "SEM TIPO",
+       "administrative_sphere": "Privado"
+      }
+     ],
+     "text": "2 record(s) match the exclusion rule \"private provider\" (nm_esfera_administrativa_equipamento = Privado): CS ESCOLA BARRA FUNDA - ALEXANDRE VRANJAC (Privado); OSEC (Privado)."
+    },
+    {
+     "kind": "rule_matches",
+     "highlight": false,
+     "rule_reason": "missing type, needs review",
+     "count": 4,
+     "records": [
+      {
+       "feature_id": "equipamento_saude_ubs_posto_centro.120359",
+       "name": "CS ESCOLA BARRA FUNDA - ALEXANDRE VRANJAC",
+       "equipment_type": "SEM TIPO",
+       "administrative_sphere": "Privado"
+      },
+      {
+       "feature_id": "equipamento_saude_ubs_posto_centro.120360",
+       "name": "CS ESCOLA GERALDO DE PAULA SOUZA",
+       "equipment_type": "SEM TIPO",
+       "administrative_sphere": "Estadual"
+      },
+      {
+       "feature_id": "equipamento_saude_ubs_posto_centro.120361",
+       "name": "CS ESCOLA SAMUEL BARNSLEY PESSOA",
+       "equipment_type": "SEM TIPO",
+       "administrative_sphere": "Estadual"
+      },
+      {
+       "feature_id": "equipamento_saude_ubs_posto_centro.120480",
+       "name": "OSEC",
+       "equipment_type": "SEM TIPO",
+       "administrative_sphere": "Privado"
+      }
+     ],
+     "text": "4 record(s) match the exclusion rule \"missing type, needs review\" (nm_tipo_equipamento = SEM TIPO): CS ESCOLA BARRA FUNDA - ALEXANDRE VRANJAC (Privado); CS ESCOLA GERALDO DE PAULA SOUZA (Estadual); CS ESCOLA SAMUEL BARNSLEY PESSOA (Estadual); OSEC (Privado)."
+    }
+   ],
+   "inclusion": {
+    "included_in_metrics": 479,
+    "excluded_from_metrics": 4,
+    "excluded_by_reason": {
+     "private provider; missing type, needs review": 2,
+     "missing type, needs review": 2
+    },
+    "rules": [
+     {
+      "field": "nm_esfera_administrativa_equipamento",
+      "equals": "Estadual",
+      "include": true,
+      "reason": "state-run (public service)",
+      "matched": 2
+     },
+     {
+      "field": "nm_esfera_administrativa_equipamento",
+      "equals": "Privado",
+      "include": false,
+      "reason": "private provider",
+      "matched": 2
+     },
+     {
+      "field": "nm_tipo_equipamento",
+      "equals": "SEM TIPO",
+      "include": false,
+      "reason": "missing type, needs review",
+      "matched": 4
+     },
+     {
+      "field": "geometry",
+      "equals": null,
+      "include": false,
+      "reason": "missing coordinates",
+      "matched": 0,
+      "built_in": true
+     }
+    ],
+    "overrides": []
+   },
+   "venue_grouping": null,
+   "change_vs_previous": {
+    "added": 0,
+    "removed": 0,
+    "note": null
+   },
+   "pct_missing_coordinates": 0.0,
+   "pct_outside_city_boundary": 0.0,
+   "pct_outside_city_boundary_note": "Records whose geometry does not intersect the city boundary (union of sp_geosampa_distrito_municipal).",
+   "outside_city_boundary": {
+    "with_geometry": 483,
+    "outside": 0,
+    "examples": [],
+    "pct_outside": 0.0
+   },
+   "duplicates_flagged": null,
+   "pct_classified_by_ai": null,
+   "fields_over_empty_threshold": {
+    "tx_horario_funcionamento": 100.0,
+    "cd_equipamento_base_origem": 100.0
+   },
+   "empty_threshold_pct": 20.0,
+   "attribute_empty_pct": {
+    "cd_identificador": 0.0,
+    "cd_identificador_tema_equipamento": 0.0,
+    "nm_tema_equipamento": 0.0,
+    "cd_identificador_rede_equipamento": 0.0,
+    "nm_rede_equipamento": 0.0,
+    "tx_rede_equipamento": 0.0,
+    "cd_identificador_tipo_equipamento": 0.0,
+    "nm_tipo_equipamento": 0.0,
+    "tx_tipo_equipamento": 0.0,
+    "cd_identificador_classe_equipamento": 0.0,
+    "nm_classe_equipamento": 0.0,
+    "tx_classe_equipamento": 0.0,
+    "cd_identificador_esfera_administrativa_equipamento": 0.0,
+    "nm_esfera_administrativa_equipamento": 0.0,
+    "tx_esfera_administrativa_equipamento": 0.0,
+    "cd_equipamento": 0.0,
+    "nm_equipamento": 0.0,
+    "tx_endereco_equipamento": 0.0,
+    "nm_bairro_equipamento": 0.0,
+    "cd_cep_equipamento": 0.0,
+    "tx_horario_funcionamento": 100.0,
+    "tx_numero_telefone": 1.04,
+    "cd_equipamento_base_origem": 100.0
+   },
+   "census_suppression": null,
+   "internal_hosts_in_metadata": [],
+   "internal_hosts_in_data": [],
+   "confidence": null,
+   "confidence_rule": null,
+   "pending": {
+    "duplicates_flagged": "Phase 7 (deduplication)",
+    "pct_classified_by_ai": "Phase 7 (AI classification)",
+    "confidence": "Phase 7 (confidence rules)",
+    "census_suppression": "Not applicable to this source (census sources only, Phase 5)."
+   }
+  },
+  {
+   "source_id": "sp_geosampa_cras",
+   "name": "Social assistance reference centres (CRAS)",
+   "publisher": "GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)",
+   "layer": "geoportal:equipamento_assistencia_social",
+   "role": "service",
+   "category": "cras",
+   "map_initially_visible": true,
+   "layer_check": {
+    "layer_configured": "geoportal:equipamento_assistencia_social",
+    "type_name_queried": "geoportal:equipamento_assistencia_social",
+    "layer_in_capabilities": true,
+    "title": "Assistência Social",
+    "abstract": "Cadastro de Equipamentos da Secretaria de Assistência e Desenvolvimento Social do Município de São Paulo.",
+    "keywords": [
+     "features",
+     "equipamento_assistencia_social_v2"
+    ],
+    "version_keywords": [
+     "equipamento_assistencia_social_v2"
+    ],
+    "similar_layers_in_capabilities": []
+   },
+   "record_filter": {
+    "field": "nm_classe_equipamento",
+    "equals": "CENTRO DE REFERÊNCIA DE ASSISTÊNCIA SOCIAL - CRAS",
+    "records_in_layer": 1336,
+    "records_kept": 54
+   },
+   "fetched_at": "2026-10-05T18:37:10Z",
+   "record_count": 54,
+   "findings": [],
+   "inclusion": {
+    "included_in_metrics": 54,
+    "excluded_from_metrics": 0,
+    "excluded_by_reason": {},
+    "rules": [
+     {
+      "field": "geometry",
+      "equals": null,
+      "include": false,
+      "reason": "missing coordinates",
+      "matched": 0,
+      "built_in": true
+     }
+    ],
+    "overrides": []
+   },
+   "venue_grouping": null,
+   "change_vs_previous": {
+    "added": 0,
+    "removed": 0,
+    "note": null
+   },
+   "pct_missing_coordinates": 0.0,
+   "pct_outside_city_boundary": 0.0,
+   "pct_outside_city_boundary_note": "Records whose geometry does not intersect the city boundary (union of sp_geosampa_distrito_municipal).",
+   "outside_city_boundary": {
+    "with_geometry": 54,
+    "outside": 0,
+    "examples": [],
+    "pct_outside": 0.0
+   },
+   "duplicates_flagged": null,
+   "pct_classified_by_ai": null,
+   "fields_over_empty_threshold": {
+    "cd_equipamento": 100.0,
+    "nm_bairro_equipamento": 100.0,
+    "qt_equipamento": 100.0,
+    "tx_horario_funcionamento": 100.0,
+    "tx_numero_telefone": 100.0,
+    "cd_equipamento_base_origem": 100.0
+   },
+   "empty_threshold_pct": 20.0,
+   "attribute_empty_pct": {
+    "cd_identificador": 0.0,
+    "cd_identificador_tema_equipamento": 0.0,
+    "nm_tema_equipamento": 0.0,
+    "cd_identificador_rede_equipamento": 0.0,
+    "nm_rede_equipamento": 0.0,
+    "tx_rede_equipamento": 0.0,
+    "cd_identificador_tipo_equipamento": 0.0,
+    "nm_tipo_equipamento": 0.0,
+    "tx_tipo_equipamento": 0.0,
+    "cd_identificador_classe_equipamento": 0.0,
+    "nm_classe_equipamento": 0.0,
+    "tx_classe_equipamento": 0.0,
+    "cd_identificador_esfera_administrativa_equipamento": 0.0,
+    "nm_esfera_administrativa_equipamento": 0.0,
+    "tx_esfera_administrativa_equipamento": 0.0,
+    "cd_equipamento": 100.0,
+    "nm_equipamento": 0.0,
+    "tx_endereco_equipamento": 0.0,
+    "nm_bairro_equipamento": 100.0,
+    "cd_cep_equipamento": 0.0,
+    "qt_equipamento": 100.0,
+    "tx_horario_funcionamento": 100.0,
+    "tx_numero_telefone": 100.0,
+    "cd_equipamento_base_origem": 100.0
+   },
+   "census_suppression": null,
+   "internal_hosts_in_metadata": [],
+   "internal_hosts_in_data": [],
+   "confidence": null,
+   "confidence_rule": null,
+   "pending": {
+    "duplicates_flagged": "Phase 7 (deduplication)",
+    "pct_classified_by_ai": "Phase 7 (AI classification)",
+    "confidence": "Phase 7 (confidence rules)",
+    "census_suppression": "Not applicable to this source (census sources only, Phase 5)."
+   },
+   "placeholder_values": {
+    "values": {
+     "cd_equipamento": [
+      "No"
+     ],
+     "nm_bairro_equipamento": [
+      "No"
+     ],
+     "tx_horario_funcionamento": [
+      "No"
+     ],
+     "tx_numero_telefone": [
+      "No"
+     ],
+     "cd_equipamento_base_origem": [
+      "No"
+     ]
+    },
+    "replaced_by_null": {
+     "cd_equipamento": 54,
+     "nm_bairro_equipamento": 54,
+     "tx_horario_funcionamento": 54,
+     "tx_numero_telefone": 54,
+     "cd_equipamento_base_origem": 54
+    }
+   },
+   "name_derivation": {
+    "method": "name of the sp_geosampa_cras_coverage area (nm_cras) containing the record; assigned only for one-to-one matches (point in exactly one area, area containing no other point)",
+    "from_source": "sp_geosampa_cras_coverage",
+    "field": "nm_cras",
+    "records": 54,
+    "records_with_geometry": 54,
+    "in_exactly_one_area": 54,
+    "in_no_area": 0,
+    "in_several_areas": 0,
+    "areas": 58,
+    "areas_without_record": [
+     "CRAS Brasilândia II",
+     "CRAS Itaim Paulista I",
+     "CRAS Itaim Paulista II",
+     "CRAS Itaim Paulista II",
+     "CRAS Itaim Paulista II",
+     "CRAS Penha"
+    ],
+    "areas_with_several_records": [
+     {
+      "area": "CRAS Freguesia Do Ó",
+      "records": 2
+     },
+     {
+      "area": "CRAS Artur Alvim",
+      "records": 2
+     }
+    ],
+    "names_assigned": 50,
+    "names_left_null": 4
+   }
+  },
+  {
+   "source_id": "sp_geosampa_parque_municipal",
+   "name": "Municipal parks",
+   "publisher": "GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)",
+   "layer": "geoportal:pde_parque_municipal",
+   "role": "service",
+   "category": "park_square",
+   "map_initially_visible": true,
+   "layer_check": {
+    "layer_configured": "geoportal:pde_parque_municipal",
+    "type_name_queried": "geoportal:pde_parque_municipal",
+    "layer_in_capabilities": true,
+    "title": "Parques Municipais (Mapa 5)",
+    "abstract": "Mapa 5 - Parques Municipais Existentes e Propostos.",
+    "keywords": [
+     "features",
+     "pde_parque_municipal"
+    ],
+    "version_keywords": [],
+    "similar_layers_in_capabilities": []
+   },
+   "record_filter": null,
+   "fetched_at": "2026-10-05T18:37:10Z",
+   "record_count": 280,
+   "findings": [],
+   "inclusion": {
+    "included_in_metrics": 116,
+    "excluded_from_metrics": 164,
+    "excluded_by_reason": {
+     "planned, not built": 164
+    },
+    "rules": [
+     {
+      "field": "tx_tipo_situacao_projeto",
+      "equals": "Proposto",
+      "include": false,
+      "reason": "planned, not built",
+      "matched": 164
+     },
+     {
+      "field": "geometry",
+      "equals": null,
+      "include": false,
+      "reason": "missing coordinates",
+      "matched": 0,
+      "built_in": true
+     }
+    ],
+    "overrides": []
+   },
+   "venue_grouping": null,
+   "change_vs_previous": {
+    "added": 0,
+    "removed": 0,
+    "note": null
+   },
+   "pct_missing_coordinates": 0.0,
+   "pct_outside_city_boundary": 0.36,
+   "pct_outside_city_boundary_note": "Records whose geometry does not intersect the city boundary (union of sp_geosampa_distrito_municipal).",
+   "outside_city_boundary": {
+    "with_geometry": 280,
+    "outside": 1,
+    "examples": [
+     {
+      "id": "sp_geosampa_parque_municipal:pde_parque_municipal.6",
+      "name": "CEMUCAM"
+     }
+    ],
+    "pct_outside": 0.36
+   },
+   "duplicates_flagged": null,
+   "pct_classified_by_ai": null,
+   "fields_over_empty_threshold": {},
+   "empty_threshold_pct": 20.0,
+   "attribute_empty_pct": {
+    "cd_identificador": 0.0,
+    "nm_parque": 0.0,
+    "cd_cadparc": 0.0,
+    "tx_tipo_categoria_parque_unidade_conservacao": 0.0,
+    "tx_tipo_situacao_projeto": 0.0,
+    "cd_tipo_categoria_parque_unidade_conservacao": 0.0,
+    "cd_tipo_situacao_projeto": 0.0,
+    "dt_atualizacao": 0.0
+   },
+   "census_suppression": null,
+   "internal_hosts_in_metadata": [],
+   "internal_hosts_in_data": [],
+   "confidence": null,
+   "confidence_rule": null,
+   "pending": {
+    "duplicates_flagged": "Phase 7 (deduplication)",
+    "pct_classified_by_ai": "Phase 7 (AI classification)",
+    "confidence": "Phase 7 (confidence rules)",
+    "census_suppression": "Not applicable to this source (census sources only, Phase 5)."
+   }
+  },
+  {
+   "source_id": "sp_geosampa_praca_largo",
+   "name": "Squares and plazas",
+   "publisher": "GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)",
+   "layer": "geoportal:GEOSAMPA_v_praca_largo",
+   "role": "service",
+   "category": "park_square",
+   "map_initially_visible": false,
+   "layer_check": {
+    "layer_configured": "geoportal:GEOSAMPA_v_praca_largo",
+    "type_name_queried": "geoportal:GEOSAMPA_v_praca_largo",
+    "layer_in_capabilities": true,
+    "title": "Cadastro de Praças e Largos",
+    "abstract": "Localização das praças e largos no território do município de São Paulo, com base nas informações repassadas por subprefeituras, SF e SEGES/CGPATRI.",
+    "keywords": [
+     "features",
+     "praca_largo"
+    ],
+    "version_keywords": [],
+    "similar_layers_in_capabilities": []
+   },
+   "record_filter": null,
+   "fetched_at": "2026-10-05T18:37:12Z",
+   "record_count": 3830,
+   "findings": [],
+   "inclusion": {
+    "included_in_metrics": 3830,
+    "excluded_from_metrics": 0,
+    "excluded_by_reason": {},
+    "rules": [
+     {
+      "field": "geometry",
+      "equals": null,
+      "include": false,
+      "reason": "missing coordinates",
+      "matched": 0,
+      "built_in": true
+     }
+    ],
+    "overrides": []
+   },
+   "venue_grouping": null,
+   "change_vs_previous": {
+    "added": 0,
+    "removed": 0,
+    "note": null
+   },
+   "pct_missing_coordinates": 0.0,
+   "pct_outside_city_boundary": 0.0,
+   "pct_outside_city_boundary_note": "Records whose geometry does not intersect the city boundary (union of sp_geosampa_distrito_municipal).",
+   "outside_city_boundary": {
+    "with_geometry": 3830,
+    "outside": 0,
+    "examples": [],
+    "pct_outside": 0.0
+   },
+   "duplicates_flagged": null,
+   "pct_classified_by_ai": null,
+   "fields_over_empty_threshold": {
+    "titulo": 81.98,
+    "preposicao": 96.45,
+    "link": 48.54,
+    "endereco2": 28.54,
+    "cep2": 28.56,
+    "endereco3": 90.29,
+    "cep3": 90.29,
+    "bairro": 27.13,
+    "uso_tipo": 74.13
+   },
+   "empty_threshold_pct": 20.0,
+   "attribute_empty_pct": {
+    "cd_identificador": 0.0,
+    "categoria": 0.0,
+    "titulo": 81.98,
+    "preposicao": 96.45,
+    "nome": 0.0,
+    "lote_tipo": 1.07,
+    "link": 48.54,
+    "distrito": 0.0,
+    "subprefeitura": 0.0,
+    "area_metro": 0.13,
+    "data_carga": 0.0,
+    "endereco1": 14.91,
+    "cep1": 14.91,
+    "endereco2": 28.54,
+    "cep2": 28.56,
+    "endereco3": 90.29,
+    "cep3": 90.29,
+    "bairro": 27.13,
+    "codigo_distrito": 0.0,
+    "codigo_subprefeitura": 0.0,
+    "uso_tipo": 74.13,
+    "codlog": 0.0,
+    "perimetro_m": 0.13
+   },
+   "census_suppression": null,
+   "internal_hosts_in_metadata": [],
+   "internal_hosts_in_data": [],
+   "confidence": null,
+   "confidence_rule": null,
+   "pending": {
+    "duplicates_flagged": "Phase 7 (deduplication)",
+    "pct_classified_by_ai": "Phase 7 (AI classification)",
+    "confidence": "Phase 7 (confidence rules)",
+    "census_suppression": "Not applicable to this source (census sources only, Phase 5)."
+   }
+  },
+  {
+   "source_id": "sp_geosampa_bibliotecas",
+   "name": "Libraries",
+   "publisher": "GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)",
+   "layer": "geoportal:equipamento_cultura_bibliotecas",
+   "role": "service",
+   "category": "library",
+   "map_initially_visible": true,
+   "layer_check": {
+    "layer_configured": "geoportal:equipamento_cultura_bibliotecas",
+    "type_name_queried": "geoportal:equipamento_cultura_bibliotecas",
+    "layer_in_capabilities": true,
+    "title": "Bibliotecas",
+    "abstract": "Identificação dos pontos georreferenciados de Bibliotecas.",
+    "keywords": [
+     "features",
+     "equipamento_cultura_bibliotecas_v3"
+    ],
+    "version_keywords": [
+     "equipamento_cultura_bibliotecas_v3"
+    ],
+    "similar_layers_in_capabilities": []
+   },
+   "record_filter": null,
+   "fetched_at": "2026-10-05T18:37:20Z",
+   "record_count": 192,
+   "findings": [
+    {
+     "kind": "empty_field",
+     "highlight": true,
+     "field": "tx_horario_funcionamento",
+     "label": "Opening hours",
+     "pct_empty": 100.0,
+     "text": "Opening hours (tx_horario_funcionamento) is 100% empty in this run."
+    },
+    {
+     "kind": "rule_matches",
+     "highlight": false,
+     "rule_reason": "private provider",
+     "count": 8,
+     "records": [
+      {
+       "feature_id": "equipamento_cultura_bibliotecas.40047",
+       "name": "Biblioteca Arsenal da Esperança - BAE",
+       "equipment_type": "Bibliotecas Públicas (inclui  Bosques e Pontos de Leitura)",
+       "administrative_sphere": "Particular"
+      },
+      {
+       "feature_id": "equipamento_cultura_bibliotecas.40075",
+       "name": "Biblioteca Comunitária Caminhos da Leitura - BCCL",
+       "equipment_type": "Bibliotecas Públicas (inclui  Bosques e Pontos de Leitura)",
+       "administrative_sphere": "Particular"
+      },
+      {
+       "feature_id": "equipamento_cultura_bibliotecas.40076",
+       "name": "Biblioteca Comunitária Djeanne Firmino",
+       "equipment_type": "Bibliotecas Públicas (inclui  Bosques e Pontos de Leitura)",
+       "administrative_sphere": "Particular"
+      },
+      {
+       "feature_id": "equipamento_cultura_bibliotecas.40077",
+       "name": "Biblioteca Comunitária Espaço Jovem Alexandre Araujo Chaves - EJAAC",
+       "equipment_type": "Bibliotecas Públicas (inclui  Bosques e Pontos de Leitura)",
+       "administrative_sphere": "Particular"
+      },
+      {
+       "feature_id": "equipamento_cultura_bibliotecas.40078",
+       "name": "Biblioteca Comunitária JAMAC",
+       "equipment_type": "Bibliotecas Públicas (inclui  Bosques e Pontos de Leitura)",
+       "administrative_sphere": "Particular"
+      },
+      {
+       "feature_id": "equipamento_cultura_bibliotecas.40095",
+       "name": "Biblioteca feminista do Caxingui - Nisia Floresta",
+       "equipment_type": "Bibliotecas Públicas (inclui  Bosques e Pontos de Leitura)",
+       "administrative_sphere": "Particular"
+      },
+      {
+       "feature_id": "equipamento_cultura_bibliotecas.40101",
+       "name": "Biblioteca Paulo Mendes de Almeida",
+       "equipment_type": "Bibliotecas Públicas (inclui  Bosques e Pontos de Leitura)",
+       "administrative_sphere": "Particular"
+      },
+      {
+       "feature_id": "equipamento_cultura_bibliotecas.40139",
+       "name": "Poloteca da Associação Lar Maria e Sininha",
+       "equipment_type": "Bibliotecas Públicas (inclui  Bosques e Pontos de Leitura)",
+       "administrative_sphere": "Particular"
+      }
+     ],
+     "text": "8 record(s) match the exclusion rule \"private provider\" (nm_esfera_administrativa_equipamento = Particular): Biblioteca Arsenal da Esperança - BAE (Particular); Biblioteca Comunitária Caminhos da Leitura - BCCL (Particular); Biblioteca Comunitária Djeanne Firmino (Particular); Biblioteca Comunitária Espaço Jovem Alexandre Araujo Chaves - EJAAC (Particular); Biblioteca Comunitária JAMAC (Particular); Biblioteca feminista do Caxingui - Nisia Floresta (Particular); Biblioteca Paulo Mendes de Almeida (Particular); Poloteca da Associação Lar Maria e Sininha (Particular)."
+    }
+   ],
+   "inclusion": {
+    "included_in_metrics": 184,
+    "excluded_from_metrics": 8,
+    "excluded_by_reason": {
+     "private provider": 8
+    },
+    "rules": [
+     {
+      "field": "nm_esfera_administrativa_equipamento",
+      "equals": "Particular",
+      "include": false,
+      "reason": "private provider",
+      "matched": 8
+     },
+     {
+      "field": "geometry",
+      "equals": null,
+      "include": false,
+      "reason": "missing coordinates",
+      "matched": 0,
+      "built_in": true
+     }
+    ],
+    "overrides": []
+   },
+   "venue_grouping": null,
+   "change_vs_previous": {
+    "added": 0,
+    "removed": 0,
+    "note": null
+   },
+   "pct_missing_coordinates": 0.0,
+   "pct_outside_city_boundary": 0.0,
+   "pct_outside_city_boundary_note": "Records whose geometry does not intersect the city boundary (union of sp_geosampa_distrito_municipal).",
+   "outside_city_boundary": {
+    "with_geometry": 192,
+    "outside": 0,
+    "examples": [],
+    "pct_outside": 0.0
+   },
+   "duplicates_flagged": null,
+   "pct_classified_by_ai": null,
+   "fields_over_empty_threshold": {
+    "cd_equipamento": 100.0,
+    "nm_bairro_equipamento": 100.0,
+    "cd_cep_equipamento": 25.52,
+    "tx_horario_funcionamento": 100.0,
+    "cd_equipamento_base_origem": 100.0
+   },
+   "empty_threshold_pct": 20.0,
+   "attribute_empty_pct": {
+    "cd_identificador": 0.0,
+    "cd_identificador_tema_equipamento": 0.0,
+    "nm_tema_equipamento": 0.0,
+    "cd_identificador_rede_equipamento": 0.0,
+    "nm_rede_equipamento": 0.0,
+    "tx_rede_equipamento": 0.0,
+    "cd_identificador_tipo_equipamento": 0.0,
+    "nm_tipo_equipamento": 0.0,
+    "tx_tipo_equipamento": 0.0,
+    "cd_identificador_classe_equipamento": 0.0,
+    "nm_classe_equipamento": 0.0,
+    "tx_classe_equipamento": 0.0,
+    "cd_identificador_esfera_administrativa_equipamento": 0.0,
+    "nm_esfera_administrativa_equipamento": 0.0,
+    "tx_esfera_administrativa_equipamento": 0.0,
+    "cd_equipamento": 100.0,
+    "nm_equipamento": 0.0,
+    "tx_endereco_equipamento": 0.0,
+    "nm_bairro_equipamento": 100.0,
+    "cd_cep_equipamento": 25.52,
+    "tx_horario_funcionamento": 100.0,
+    "tx_numero_telefone": 0.0,
+    "cd_equipamento_base_origem": 100.0
+   },
+   "census_suppression": null,
+   "internal_hosts_in_metadata": [],
+   "internal_hosts_in_data": [],
+   "confidence": null,
+   "confidence_rule": null,
+   "pending": {
+    "duplicates_flagged": "Phase 7 (deduplication)",
+    "pct_classified_by_ai": "Phase 7 (AI classification)",
+    "confidence": "Phase 7 (confidence rules)",
+    "census_suppression": "Not applicable to this source (census sources only, Phase 5)."
+   }
+  },
+  {
+   "source_id": "sp_geosampa_espacos_culturais",
+   "name": "Cultural spaces",
+   "publisher": "GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)",
+   "layer": "geoportal:equipamento_cultura_espacos_culturais",
+   "role": "service",
+   "category": "culture",
+   "map_initially_visible": true,
+   "layer_check": {
+    "layer_configured": "geoportal:equipamento_cultura_espacos_culturais",
+    "type_name_queried": "geoportal:equipamento_cultura_espacos_culturais",
+    "layer_in_capabilities": true,
+    "title": "Espaços Culturais",
+    "abstract": "Identificação dos pontos georreferenciados de Espaços Culturais.",
+    "keywords": [
+     "features",
+     "equipamento_cultura_espacos_culturais_v3"
+    ],
+    "version_keywords": [
+     "equipamento_cultura_espacos_culturais_v3"
+    ],
+    "similar_layers_in_capabilities": []
+   },
+   "record_filter": null,
+   "fetched_at": "2026-10-05T18:37:20Z",
+   "record_count": 35,
+   "findings": [
+    {
+     "kind": "empty_field",
+     "highlight": true,
+     "field": "tx_horario_funcionamento",
+     "label": "Opening hours",
+     "pct_empty": 100.0,
+     "text": "Opening hours (tx_horario_funcionamento) is 100% empty in this run."
+    }
+   ],
+   "inclusion": {
+    "included_in_metrics": 35,
+    "excluded_from_metrics": 0,
+    "excluded_by_reason": {},
+    "rules": [
+     {
+      "field": "nm_esfera_administrativa_equipamento",
+      "equals": "Particular",
+      "include": false,
+      "reason": "private provider",
+      "matched": 0
+     },
+     {
+      "field": "geometry",
+      "equals": null,
+      "include": false,
+      "reason": "missing coordinates",
+      "matched": 0,
+      "built_in": true
+     }
+    ],
+    "overrides": []
+   },
+   "venue_grouping": null,
+   "change_vs_previous": {
+    "added": 0,
+    "removed": 0,
+    "note": null
+   },
+   "pct_missing_coordinates": 0.0,
+   "pct_outside_city_boundary": 0.0,
+   "pct_outside_city_boundary_note": "Records whose geometry does not intersect the city boundary (union of sp_geosampa_distrito_municipal).",
+   "outside_city_boundary": {
+    "with_geometry": 35,
+    "outside": 0,
+    "examples": [],
+    "pct_outside": 0.0
+   },
+   "duplicates_flagged": null,
+   "pct_classified_by_ai": null,
+   "fields_over_empty_threshold": {
+    "cd_equipamento": 100.0,
+    "nm_bairro_equipamento": 100.0,
+    "cd_cep_equipamento": 94.29,
+    "tx_horario_funcionamento": 100.0,
+    "cd_equipamento_base_origem": 100.0
+   },
+   "empty_threshold_pct": 20.0,
+   "attribute_empty_pct": {
+    "cd_identificador": 0.0,
+    "cd_identificador_tema_equipamento": 0.0,
+    "nm_tema_equipamento": 0.0,
+    "cd_identificador_rede_equipamento": 0.0,
+    "nm_rede_equipamento": 0.0,
+    "tx_rede_equipamento": 0.0,
+    "cd_identificador_tipo_equipamento": 0.0,
+    "nm_tipo_equipamento": 0.0,
+    "tx_tipo_equipamento": 0.0,
+    "cd_identificador_classe_equipamento": 0.0,
+    "nm_classe_equipamento": 0.0,
+    "tx_classe_equipamento": 0.0,
+    "cd_identificador_esfera_administrativa_equipamento": 0.0,
+    "nm_esfera_administrativa_equipamento": 0.0,
+    "tx_esfera_administrativa_equipamento": 0.0,
+    "cd_equipamento": 100.0,
+    "nm_equipamento": 0.0,
+    "tx_endereco_equipamento": 0.0,
+    "nm_bairro_equipamento": 100.0,
+    "cd_cep_equipamento": 94.29,
+    "tx_horario_funcionamento": 100.0,
+    "tx_numero_telefone": 8.57,
+    "cd_equipamento_base_origem": 100.0
+   },
+   "census_suppression": null,
+   "internal_hosts_in_metadata": [],
+   "internal_hosts_in_data": [],
+   "confidence": null,
+   "confidence_rule": null,
+   "pending": {
+    "duplicates_flagged": "Phase 7 (deduplication)",
+    "pct_classified_by_ai": "Phase 7 (AI classification)",
+    "confidence": "Phase 7 (confidence rules)",
+    "census_suppression": "Not applicable to this source (census sources only, Phase 5)."
+   }
+  },
+  {
+   "source_id": "sp_geosampa_museus",
+   "name": "Museums",
+   "publisher": "GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)",
+   "layer": "geoportal:equipamento_cultura_museus",
+   "role": "service",
+   "category": "culture",
+   "map_initially_visible": true,
+   "layer_check": {
+    "layer_configured": "geoportal:equipamento_cultura_museus",
+    "type_name_queried": "geoportal:equipamento_cultura_museus",
+    "layer_in_capabilities": true,
+    "title": "Museus",
+    "abstract": "Identificação dos pontos georreferenciados de Museus.",
+    "keywords": [
+     "equipamento_cultura_museus_v3",
+     "features"
+    ],
+    "version_keywords": [
+     "equipamento_cultura_museus_v3"
+    ],
+    "similar_layers_in_capabilities": []
+   },
+   "record_filter": null,
+   "fetched_at": "2026-10-05T18:37:20Z",
+   "record_count": 167,
+   "findings": [
+    {
+     "kind": "empty_field",
+     "highlight": true,
+     "field": "tx_horario_funcionamento",
+     "label": "Opening hours",
+     "pct_empty": 100.0,
+     "text": "Opening hours (tx_horario_funcionamento) is 100% empty in this run."
+    }
+   ],
+   "inclusion": {
+    "included_in_metrics": 99,
+    "excluded_from_metrics": 68,
+    "excluded_by_reason": {
+     "private provider": 68
+    },
+    "rules": [
+     {
+      "field": "nm_esfera_administrativa_equipamento",
+      "equals": "Particular",
+      "include": false,
+      "reason": "private provider",
+      "matched": 68
+     },
+     {
+      "field": "geometry",
+      "equals": null,
+      "include": false,
+      "reason": "missing coordinates",
+      "matched": 0,
+      "built_in": true
+     }
+    ],
+    "overrides": []
+   },
+   "venue_grouping": null,
+   "change_vs_previous": {
+    "added": 0,
+    "removed": 0,
+    "note": null
+   },
+   "pct_missing_coordinates": 0.0,
+   "pct_outside_city_boundary": 0.0,
+   "pct_outside_city_boundary_note": "Records whose geometry does not intersect the city boundary (union of sp_geosampa_distrito_municipal).",
+   "outside_city_boundary": {
+    "with_geometry": 167,
+    "outside": 0,
+    "examples": [],
+    "pct_outside": 0.0
+   },
+   "duplicates_flagged": null,
+   "pct_classified_by_ai": null,
+   "fields_over_empty_threshold": {
+    "cd_equipamento": 100.0,
+    "nm_bairro_equipamento": 100.0,
+    "tx_horario_funcionamento": 100.0,
+    "cd_equipamento_base_origem": 100.0
+   },
+   "empty_threshold_pct": 20.0,
+   "attribute_empty_pct": {
+    "cd_identificador": 0.0,
+    "cd_identificador_tema_equipamento": 0.0,
+    "nm_tema_equipamento": 0.0,
+    "cd_identificador_rede_equipamento": 0.0,
+    "nm_rede_equipamento": 0.0,
+    "tx_rede_equipamento": 0.0,
+    "cd_identificador_tipo_equipamento": 0.0,
+    "nm_tipo_equipamento": 0.0,
+    "tx_tipo_equipamento": 0.0,
+    "cd_identificador_classe_equipamento": 0.0,
+    "nm_classe_equipamento": 0.0,
+    "tx_classe_equipamento": 0.0,
+    "cd_identificador_esfera_administrativa_equipamento": 0.0,
+    "nm_esfera_administrativa_equipamento": 0.0,
+    "tx_esfera_administrativa_equipamento": 0.0,
+    "cd_equipamento": 100.0,
+    "nm_equipamento": 0.0,
+    "tx_endereco_equipamento": 0.0,
+    "nm_bairro_equipamento": 100.0,
+    "cd_cep_equipamento": 4.19,
+    "tx_horario_funcionamento": 100.0,
+    "tx_numero_telefone": 3.59,
+    "cd_equipamento_base_origem": 100.0
+   },
+   "census_suppression": null,
+   "internal_hosts_in_metadata": [],
+   "internal_hosts_in_data": [],
+   "confidence": null,
+   "confidence_rule": null,
+   "pending": {
+    "duplicates_flagged": "Phase 7 (deduplication)",
+    "pct_classified_by_ai": "Phase 7 (AI classification)",
+    "confidence": "Phase 7 (confidence rules)",
+    "census_suppression": "Not applicable to this source (census sources only, Phase 5)."
+   }
+  },
+  {
+   "source_id": "sp_geosampa_teatro_cinema_show",
+   "name": "Theatres, cinemas and venues",
+   "publisher": "GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)",
+   "layer": "geoportal:equipamento_cultura_teatro_cinema_show",
+   "role": "service",
+   "category": "culture",
+   "map_initially_visible": true,
+   "layer_check": {
+    "layer_configured": "geoportal:equipamento_cultura_teatro_cinema_show",
+    "type_name_queried": "geoportal:equipamento_cultura_teatro_cinema_show",
+    "layer_in_capabilities": true,
+    "title": "Teatro/Cinema/Shows",
+    "abstract": "Identificação dos pontos georreferenciados de salas de Teatro, salas de Cinema, Show e Concertos.",
+    "keywords": [
+     "equipamento_cultura_teatro_cinema_show_v3",
+     "features"
+    ],
+    "version_keywords": [
+     "equipamento_cultura_teatro_cinema_show_v3"
+    ],
+    "similar_layers_in_capabilities": []
+   },
+   "record_filter": null,
+   "fetched_at": "2026-10-05T18:37:20Z",
+   "record_count": 410,
+   "findings": [
+    {
+     "kind": "empty_field",
+     "highlight": true,
+     "field": "tx_horario_funcionamento",
+     "label": "Opening hours",
+     "pct_empty": 100.0,
+     "text": "Opening hours (tx_horario_funcionamento) is 100% empty in this run."
+    }
+   ],
+   "inclusion": {
+    "included_in_metrics": 39,
+    "excluded_from_metrics": 371,
+    "excluded_by_reason": {
+     "private provider": 364,
+     "another room of the same venue (venue counted once)": 7
+    },
+    "rules": [
+     {
+      "field": "nm_esfera_administrativa_equipamento",
+      "equals": "Particular",
+      "include": false,
+      "reason": "private provider",
+      "matched": 364
+     },
+     {
+      "field": "geometry",
+      "equals": null,
+      "include": false,
+      "reason": "missing coordinates",
+      "matched": 0,
+      "built_in": true
+     }
+    ],
+    "overrides": []
+   },
+   "venue_grouping": {
+    "fields": [
+     "tx_endereco_equipamento"
+    ],
+    "records": 410,
+    "venues": 107,
+    "venues_with_several_records": 56,
+    "records_excluded_as_same_venue": 7,
+    "reason": "another room of the same venue (venue counted once)"
+   },
+   "change_vs_previous": {
+    "added": 0,
+    "removed": 0,
+    "note": null
+   },
+   "pct_missing_coordinates": 0.0,
+   "pct_outside_city_boundary": 0.0,
+   "pct_outside_city_boundary_note": "Records whose geometry does not intersect the city boundary (union of sp_geosampa_distrito_municipal).",
+   "outside_city_boundary": {
+    "with_geometry": 410,
+    "outside": 0,
+    "examples": [],
+    "pct_outside": 0.0
+   },
+   "duplicates_flagged": null,
+   "pct_classified_by_ai": null,
+   "fields_over_empty_threshold": {
+    "cd_equipamento": 100.0,
+    "nm_bairro_equipamento": 100.0,
+    "tx_horario_funcionamento": 100.0,
+    "tx_numero_telefone": 91.22,
+    "cd_equipamento_base_origem": 100.0
+   },
+   "empty_threshold_pct": 20.0,
+   "attribute_empty_pct": {
+    "cd_identificador": 0.0,
+    "cd_identificador_tema_equipamento": 0.0,
+    "nm_tema_equipamento": 0.0,
+    "cd_identificador_rede_equipamento": 0.0,
+    "nm_rede_equipamento": 0.0,
+    "tx_rede_equipamento": 0.0,
+    "cd_identificador_tipo_equipamento": 0.0,
+    "nm_tipo_equipamento": 0.0,
+    "tx_tipo_equipamento": 0.0,
+    "cd_identificador_classe_equipamento": 0.0,
+    "nm_classe_equipamento": 0.0,
+    "tx_classe_equipamento": 0.0,
+    "cd_identificador_esfera_administrativa_equipamento": 0.0,
+    "nm_esfera_administrativa_equipamento": 0.0,
+    "tx_esfera_administrativa_equipamento": 0.0,
+    "cd_equipamento": 100.0,
+    "nm_equipamento": 0.0,
+    "tx_endereco_equipamento": 0.0,
+    "nm_bairro_equipamento": 100.0,
+    "cd_cep_equipamento": 7.56,
+    "tx_horario_funcionamento": 100.0,
+    "tx_numero_telefone": 91.22,
+    "cd_equipamento_base_origem": 100.0
+   },
+   "census_suppression": null,
+   "internal_hosts_in_metadata": [],
+   "internal_hosts_in_data": [],
+   "confidence": null,
+   "confidence_rule": null,
+   "pending": {
+    "duplicates_flagged": "Phase 7 (deduplication)",
+    "pct_classified_by_ai": "Phase 7 (AI classification)",
+    "confidence": "Phase 7 (confidence rules)",
+    "census_suppression": "Not applicable to this source (census sources only, Phase 5)."
+   }
+  },
+  {
+   "source_id": "sp_geosampa_estacao_metro",
+   "name": "Metro stations",
+   "publisher": "GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)",
+   "layer": "geoportal:estacao_metro",
+   "role": "service",
+   "category": "metro_train",
+   "map_initially_visible": true,
+   "layer_check": {
+    "layer_configured": "geoportal:estacao_metro",
+    "type_name_queried": "geoportal:estacao_metro",
+    "layer_in_capabilities": true,
+    "title": "Metrô - Estação",
+    "abstract": "Estações ativas da Companhia do Metropolitano de São Paulo - Metrô.",
+    "keywords": [
+     "v_estacao_metro_trem_gsrv",
+     "features"
+    ],
+    "version_keywords": [],
+    "similar_layers_in_capabilities": [
+     "geoportal:estacao_metro_projetada"
+    ]
+   },
+   "record_filter": null,
+   "fetched_at": "2026-10-05T18:37:21Z",
+   "record_count": 94,
+   "findings": [],
+   "inclusion": {
+    "included_in_metrics": 94,
+    "excluded_from_metrics": 0,
+    "excluded_by_reason": {},
+    "rules": [
+     {
+      "field": "geometry",
+      "equals": null,
+      "include": false,
+      "reason": "missing coordinates",
+      "matched": 0,
+      "built_in": true
+     }
+    ],
+    "overrides": []
+   },
+   "venue_grouping": null,
+   "change_vs_previous": {
+    "added": 0,
+    "removed": 0,
+    "note": null
+   },
+   "pct_missing_coordinates": 0.0,
+   "pct_outside_city_boundary": 0.0,
+   "pct_outside_city_boundary_note": "Records whose geometry does not intersect the city boundary (union of sp_geosampa_distrito_municipal).",
+   "outside_city_boundary": {
+    "with_geometry": 94,
+    "outside": 0,
+    "examples": [],
+    "pct_outside": 0.0
+   },
+   "duplicates_flagged": null,
+   "pct_classified_by_ai": null,
+   "fields_over_empty_threshold": {},
+   "empty_threshold_pct": 20.0,
+   "attribute_empty_pct": {
+    "cd_identificador": 0.0,
+    "cd_identificador_empresa_metro_trem": 0.0,
+    "nm_estacao_metro_trem": 0.0,
+    "cd_situacao_estacao_metro_trem": 0.0,
+    "sg_fonte_original": 0.0,
+    "cd_identificador_linha": 0.0,
+    "tx_situacao_metro_trem": 0.0,
+    "nm_linha_metro_trem": 0.0,
+    "nm_empresa_metro_trem": 0.0,
+    "cd_tipo_transporte": 0.0
+   },
+   "census_suppression": null,
+   "internal_hosts_in_metadata": [],
+   "internal_hosts_in_data": [],
+   "confidence": null,
+   "confidence_rule": null,
+   "pending": {
+    "duplicates_flagged": "Phase 7 (deduplication)",
+    "pct_classified_by_ai": "Phase 7 (AI classification)",
+    "confidence": "Phase 7 (confidence rules)",
+    "census_suppression": "Not applicable to this source (census sources only, Phase 5)."
+   }
+  },
+  {
+   "source_id": "sp_geosampa_estacao_trem",
+   "name": "Train stations (CPTM and ViaMobilidade)",
+   "publisher": "GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)",
+   "layer": "geoportal:estacao_trem",
+   "role": "service",
+   "category": "metro_train",
+   "map_initially_visible": true,
+   "layer_check": {
+    "layer_configured": "geoportal:estacao_trem",
+    "type_name_queried": "geoportal:estacao_trem",
+    "layer_in_capabilities": true,
+    "title": "Trem Metropolitano - Estação",
+    "abstract": "Estações de trem da Companhia de Trens Metropolitanos (CPTM).",
+    "keywords": [
+     "estacao_trem_v2",
+     "features"
+    ],
+    "version_keywords": [
+     "estacao_trem_v2"
+    ],
+    "similar_layers_in_capabilities": [
+     "geoportal:estacao_trem_projetada"
+    ]
+   },
+   "record_filter": null,
+   "fetched_at": "2026-10-05T18:37:21Z",
+   "record_count": 109,
+   "findings": [],
+   "inclusion": {
+    "included_in_metrics": 109,
+    "excluded_from_metrics": 0,
+    "excluded_by_reason": {},
+    "rules": [
+     {
+      "field": "geometry",
+      "equals": null,
+      "include": false,
+      "reason": "missing coordinates",
+      "matched": 0,
+      "built_in": true
+     }
+    ],
+    "overrides": []
+   },
+   "venue_grouping": null,
+   "change_vs_previous": {
+    "added": 0,
+    "removed": 0,
+    "note": null
+   },
+   "pct_missing_coordinates": 0.0,
+   "pct_outside_city_boundary": 47.71,
+   "pct_outside_city_boundary_note": "Records whose geometry does not intersect the city boundary (union of sp_geosampa_distrito_municipal).",
+   "outside_city_boundary": {
+    "with_geometry": 109,
+    "outside": 52,
+    "examples": [
+     {
+      "id": "sp_geosampa_estacao_trem:estacao_trem.3001",
+      "name": "MAUÁ"
+     },
+     {
+      "id": "sp_geosampa_estacao_trem:estacao_trem.3002",
+      "name": "MOGI DAS CRUZES"
+     },
+     {
+      "id": "sp_geosampa_estacao_trem:estacao_trem.3006",
+      "name": "POÁ"
+     },
+     {
+      "id": "sp_geosampa_estacao_trem:estacao_trem.3007",
+      "name": "PREFEITO SALADINO"
+     },
+     {
+      "id": "sp_geosampa_estacao_trem:estacao_trem.3008",
+      "name": "RIBEIRÃO PIRES"
+     },
+     {
+      "id": "sp_geosampa_estacao_trem:estacao_trem.3009",
+      "name": "RIO GRANDE DA SERRA"
+     },
+     {
+      "id": "sp_geosampa_estacao_trem:estacao_trem.3010",
+      "name": "SÃO CAETANO"
+     },
+     {
+      "id": "sp_geosampa_estacao_trem:estacao_trem.3012",
+      "name": "SUZANO"
+     },
+     {
+      "id": "sp_geosampa_estacao_trem:estacao_trem.3014",
+      "name": "UTINGA"
+     },
+     {
+      "id": "sp_geosampa_estacao_trem:estacao_trem.3015",
+      "name": "VÁRZEA PAULISTA"
+     }
+    ],
+    "pct_outside": 47.71
+   },
+   "duplicates_flagged": null,
+   "pct_classified_by_ai": null,
+   "fields_over_empty_threshold": {},
+   "empty_threshold_pct": 20.0,
+   "attribute_empty_pct": {
+    "cd_identificador": 0.0,
+    "cd_identificador_empresa_metro_trem": 0.0,
+    "nm_estacao_metro_trem": 0.0,
+    "cd_situacao_estacao_metro_trem": 0.0,
+    "sg_fonte_original": 0.0,
+    "cd_identificador_linha": 0.0,
+    "tx_situacao_metro_trem": 0.0,
+    "nm_linha_metro_trem": 0.0,
+    "nm_empresa_metro_trem": 0.0,
+    "cd_tipo_transporte": 0.0
+   },
+   "census_suppression": null,
+   "internal_hosts_in_metadata": [],
+   "internal_hosts_in_data": [],
+   "confidence": null,
+   "confidence_rule": null,
+   "pending": {
+    "duplicates_flagged": "Phase 7 (deduplication)",
+    "pct_classified_by_ai": "Phase 7 (AI classification)",
+    "confidence": "Phase 7 (confidence rules)",
+    "census_suppression": "Not applicable to this source (census sources only, Phase 5)."
+   }
+  },
+  {
+   "source_id": "sp_geosampa_ponto_onibus",
+   "name": "Bus stops",
+   "publisher": "GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)",
+   "layer": "geoportal:ponto_onibus",
+   "role": "service",
+   "category": "transit",
+   "map_initially_visible": false,
+   "layer_check": {
+    "layer_configured": "geoportal:ponto_onibus",
+    "type_name_queried": "geoportal:ponto_onibus",
+    "layer_in_capabilities": true,
+    "title": "Pontos de ônibus",
+    "abstract": "Posição Geográfica de todas as paradas e terminais de ônibus gerenciados pela SPTrans. Também possui todas as estações gerenciadas pelo METRO e CPTM. Dados das linhas e horários obtidos a partir da base GTFS (https://developers.google.com/transit/gtfs/reference?hl=pt-br) gerado diariamente pela SPTrans.",
+    "keywords": [
+     "ponto_onibus",
+     "features"
+    ],
+    "version_keywords": [],
+    "similar_layers_in_capabilities": []
+   },
+   "record_filter": null,
+   "fetched_at": "2026-10-05T18:37:21Z",
+   "record_count": 22570,
+   "findings": [],
+   "inclusion": {
+    "included_in_metrics": 22570,
+    "excluded_from_metrics": 0,
+    "excluded_by_reason": {},
+    "rules": [
+     {
+      "field": "geometry",
+      "equals": null,
+      "include": false,
+      "reason": "missing coordinates",
+      "matched": 0,
+      "built_in": true
+     }
+    ],
+    "overrides": []
+   },
+   "venue_grouping": null,
+   "change_vs_previous": {
+    "added": 0,
+    "removed": 0,
+    "note": null
+   },
+   "pct_missing_coordinates": 0.0,
+   "pct_outside_city_boundary": 0.53,
+   "pct_outside_city_boundary_note": "Records whose geometry does not intersect the city boundary (union of sp_geosampa_distrito_municipal).",
+   "outside_city_boundary": {
+    "with_geometry": 22570,
+    "outside": 120,
+    "examples": [
+     {
+      "id": "sp_geosampa_ponto_onibus:18894",
+      "name": "C11 GUAIANASES - ANTONIO G.NETO , 1200"
+     },
+     {
+      "id": "sp_geosampa_ponto_onibus:18898",
+      "name": "C11 FERRAZ DE VASCONCELOS - POÁ , 0"
+     },
+     {
+      "id": "sp_geosampa_ponto_onibus:18899",
+      "name": "C11 FERRAZ DE VASCONCELOS - POÁ , 0"
+     },
+     {
+      "id": "sp_geosampa_ponto_onibus:18900",
+      "name": "C12 ENG. MANOEL FEIO - ITAQUAQUECETUBA , 0"
+     },
+     {
+      "id": "sp_geosampa_ponto_onibus:18901",
+      "name": "C11 POÁ - CALMON VIANA , 1441"
+     },
+     {
+      "id": "sp_geosampa_ponto_onibus:18902",
+      "name": "C11 CALMON VIANA - SUZANO , 55"
+     },
+     {
+      "id": "sp_geosampa_ponto_onibus:18914",
+      "name": "C08 STA. RITA - AMADOR BUENO , 17"
+     },
+     {
+      "id": "sp_geosampa_ponto_onibus:18924",
+      "name": "C07 PERUS - CAIEIRAS , 0"
+     },
+     {
+      "id": "sp_geosampa_ponto_onibus:18925",
+      "name": "C07 CAIEIRAS - FRANCO DA ROCHA , 0"
+     },
+     {
+      "id": "sp_geosampa_ponto_onibus:18926",
+      "name": "C07 FRANCO DA ROCHA - BALTAZAR FIDÉLIS , 0"
+     }
+    ],
+    "pct_outside": 0.53
+   },
+   "duplicates_flagged": null,
+   "pct_classified_by_ai": null,
+   "fields_over_empty_threshold": {},
+   "empty_threshold_pct": 20.0,
+   "attribute_empty_pct": {
+    "cd_identificador_ponto_onibus": 0.0,
+    "sg_fonte_original": 0.0,
+    "nm_ponto_onibus": 0.0,
+    "tx_endereco_ponto_onibus": 6.33,
+    "tx_descricao_ponto_onibus": 6.33
+   },
+   "census_suppression": null,
+   "internal_hosts_in_metadata": [],
+   "internal_hosts_in_data": [],
+   "confidence": null,
+   "confidence_rule": null,
+   "pending": {
+    "duplicates_flagged": "Phase 7 (deduplication)",
+    "pct_classified_by_ai": "Phase 7 (AI classification)",
+    "confidence": "Phase 7 (confidence rules)",
+    "census_suppression": "Not applicable to this source (census sources only, Phase 5)."
+   }
+  },
+  {
+   "source_id": "sp_geosampa_terminal_onibus",
+   "name": "Bus terminals",
+   "publisher": "GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)",
+   "layer": "geoportal:terminal_onibus",
+   "role": "service",
+   "category": "transit",
+   "map_initially_visible": true,
+   "layer_check": {
+    "layer_configured": "geoportal:terminal_onibus",
+    "type_name_queried": "geoportal:terminal_onibus",
+    "layer_in_capabilities": true,
+    "title": "Terminal de Ônibus",
+    "abstract": "Identificação dos pontos georreferenciados de Terminais rodoviários e urbanos de ônibus.",
+    "keywords": [
+     "v_terminal_onibus_gsrv",
+     "features"
+    ],
+    "version_keywords": [],
+    "similar_layers_in_capabilities": []
+   },
+   "record_filter": null,
+   "fetched_at": "2026-10-05T18:37:42Z",
+   "record_count": 50,
+   "findings": [
+    {
+     "kind": "rule_matches",
+     "highlight": false,
+     "rule_reason": "intercity terminal, not daily access",
+     "count": 3,
+     "records": [
+      {
+       "feature_id": "terminal_onibus.1",
+       "name": "Terminal Rodoviario do Jabaquara",
+       "equipment_type": "RODOVIARIO",
+       "administrative_sphere": null
+      },
+      {
+       "feature_id": "terminal_onibus.2",
+       "name": "Terminal Rodoviario do Tiete",
+       "equipment_type": "RODOVIARIO",
+       "administrative_sphere": null
+      },
+      {
+       "feature_id": "terminal_onibus.3",
+       "name": "Terminal Rodoviario Intermodal Barra Funda",
+       "equipment_type": "RODOVIARIO",
+       "administrative_sphere": null
+      }
+     ],
+     "text": "3 record(s) match the exclusion rule \"intercity terminal, not daily access\" (nm_tipo_terminal = RODOVIARIO): Terminal Rodoviario do Jabaquara; Terminal Rodoviario do Tiete; Terminal Rodoviario Intermodal Barra Funda."
+    }
+   ],
+   "inclusion": {
+    "included_in_metrics": 47,
+    "excluded_from_metrics": 3,
+    "excluded_by_reason": {
+     "intercity terminal, not daily access": 3
+    },
+    "rules": [
+     {
+      "field": "nm_tipo_terminal",
+      "equals": "RODOVIARIO",
+      "include": false,
+      "reason": "intercity terminal, not daily access",
+      "matched": 3
+     },
+     {
+      "field": "geometry",
+      "equals": null,
+      "include": false,
+      "reason": "missing coordinates",
+      "matched": 0,
+      "built_in": true
+     }
+    ],
+    "overrides": []
+   },
+   "venue_grouping": null,
+   "change_vs_previous": {
+    "added": 0,
+    "removed": 0,
+    "note": null
+   },
+   "pct_missing_coordinates": 0.0,
+   "pct_outside_city_boundary": 30.0,
+   "pct_outside_city_boundary_note": "Records whose geometry does not intersect the city boundary (union of sp_geosampa_distrito_municipal).",
+   "outside_city_boundary": {
+    "with_geometry": 50,
+    "outside": 15,
+    "examples": [
+     {
+      "id": "sp_geosampa_terminal_onibus:terminal_onibus.33",
+      "name": "Cotia"
+     },
+     {
+      "id": "sp_geosampa_terminal_onibus:terminal_onibus.34",
+      "name": "Vila Yara/Amador Bueno"
+     },
+     {
+      "id": "sp_geosampa_terminal_onibus:terminal_onibus.35",
+      "name": "Carapicuíba"
+     },
+     {
+      "id": "sp_geosampa_terminal_onibus:terminal_onibus.36",
+      "name": "Km 21/Luiz Bortolosso"
+     },
+     {
+      "id": "sp_geosampa_terminal_onibus:terminal_onibus.37",
+      "name": "CECAP"
+     },
+     {
+      "id": "sp_geosampa_terminal_onibus:terminal_onibus.38",
+      "name": "Taboão"
+     },
+     {
+      "id": "sp_geosampa_terminal_onibus:terminal_onibus.39",
+      "name": "Vila Galvão"
+     },
+     {
+      "id": "sp_geosampa_terminal_onibus:terminal_onibus.40",
+      "name": "Diadema"
+     },
+     {
+      "id": "sp_geosampa_terminal_onibus:terminal_onibus.41",
+      "name": "Ferrazópolis"
+     },
+     {
+      "id": "sp_geosampa_terminal_onibus:terminal_onibus.43",
+      "name": "Piraporinha"
+     }
+    ],
+    "pct_outside": 30.0
+   },
+   "duplicates_flagged": null,
+   "pct_classified_by_ai": null,
+   "fields_over_empty_threshold": {
+    "cd_usuario_atualizacao": 100.0
+   },
+   "empty_threshold_pct": 20.0,
+   "attribute_empty_pct": {
+    "cd_identificador": 0.0,
+    "nm_terminal": 0.0,
+    "nm_tipo_terminal": 0.0,
+    "tx_endereco_terminal": 0.0,
+    "cd_tipo_terminal": 0.0,
+    "sg_fonte_original": 0.0,
+    "cd_usuario_atualizacao": 100.0,
+    "dt_atualizacao": 0.0,
+    "tx_status_terminal": 0.0
+   },
+   "census_suppression": null,
+   "internal_hosts_in_metadata": [],
+   "internal_hosts_in_data": [],
+   "confidence": null,
+   "confidence_rule": null,
+   "pending": {
+    "duplicates_flagged": "Phase 7 (deduplication)",
+    "pct_classified_by_ai": "Phase 7 (AI classification)",
+    "confidence": "Phase 7 (confidence rules)",
+    "census_suppression": "Not applicable to this source (census sources only, Phase 5)."
+   }
+  },
+  {
+   "source_id": "sp_geosampa_distrito_municipal",
+   "name": "Municipal districts",
+   "publisher": "GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)",
+   "layer": "geoportal:distrito_municipal",
+   "role": "context",
+   "category": null,
+   "map_initially_visible": true,
+   "layer_check": {
+    "layer_configured": "geoportal:distrito_municipal",
+    "type_name_queried": "geoportal:distrito_municipal",
+    "layer_in_capabilities": true,
+    "title": "Distrito",
+    "abstract": "Os distritos foram criados mediante a Lei nº 11.220/1992. Seus limites foram estabelecidos a partir de estudos elaborados por diversos órgãos do Executivo municipal, tendo em conta fatores físico-territoriais, demográficos, urbanísticos, econômicos e político-administrativos.",
+    "keywords": [
+     "v_distrito_municipal_gsrv",
+     "features"
+    ],
+    "version_keywords": [],
+    "similar_layers_in_capabilities": []
+   },
+   "record_filter": null,
+   "fetched_at": "2026-10-05T18:37:43Z",
+   "record_count": 96,
+   "findings": [],
+   "inclusion": {
+    "included_in_metrics": 96,
+    "excluded_from_metrics": 0,
+    "excluded_by_reason": {},
+    "rules": [
+     {
+      "field": "geometry",
+      "equals": null,
+      "include": false,
+      "reason": "missing coordinates",
+      "matched": 0,
+      "built_in": true
+     }
+    ],
+    "overrides": []
+   },
+   "venue_grouping": null,
+   "change_vs_previous": {
+    "added": null,
+    "removed": null,
+    "note": "No previous completed run with this source."
+   },
+   "pct_missing_coordinates": 0.0,
+   "pct_outside_city_boundary": null,
+   "pct_outside_city_boundary_note": "Not applicable (not a service layer).",
+   "outside_city_boundary": null,
+   "duplicates_flagged": null,
+   "pct_classified_by_ai": null,
+   "fields_over_empty_threshold": {
+    "cd_usuario_atualizacao": 100.0
+   },
+   "empty_threshold_pct": 20.0,
+   "attribute_empty_pct": {
+    "cd_identificador_distrito": 0.0,
+    "cd_identificador_subprefeitura": 0.0,
+    "cd_distrito_municipal": 0.0,
+    "nm_distrito_municipal": 0.0,
+    "sg_distrito_municipal": 0.0,
+    "tx_escala": 0.0,
+    "sg_fonte_original": 0.0,
+    "dt_criacao": 0.0,
+    "dt_atualizacao": 0.0,
+    "cd_usuario_atualizacao": 100.0,
+    "cd_tipo_discrepancia": 0.0,
+    "qt_area_quilometro": 0.0,
+    "qt_area_metro": 0.0,
+    "cd_regiao_05": 0.0,
+    "nm_regiao_05": 0.0,
+    "cd_regiao_08": 0.0,
+    "nm_regiao_08": 0.0
+   },
+   "census_suppression": null,
+   "internal_hosts_in_metadata": [],
+   "internal_hosts_in_data": [],
+   "confidence": null,
+   "confidence_rule": null,
+   "pending": {
+    "duplicates_flagged": "Phase 7 (deduplication)",
+    "pct_classified_by_ai": "Phase 7 (AI classification)",
+    "confidence": "Phase 7 (confidence rules)",
+    "census_suppression": "Not applicable to this source (census sources only, Phase 5)."
+   }
+  },
+  {
+   "source_id": "sp_geosampa_area_contexto",
+   "name": "São Paulo municipality (area_contexto feature 27, boundary check)",
+   "publisher": "GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)",
+   "layer": "geoportal:area_contexto",
+   "role": "reference",
+   "category": null,
+   "map_initially_visible": true,
+   "layer_check": {
+    "layer_configured": "geoportal:area_contexto",
+    "type_name_queried": "geoportal:area_contexto",
+    "layer_in_capabilities": true,
+    "title": "Municípios do Estado de São Paulo",
+    "abstract": "Malha de municípios do Estado de São Paulo e outros polígonos de contextualização regional usados na produção de mapas base do Sistema de Informações Geográficas do Município de São Paulo (SIG-SP). Limites do município de São Paulo e de municípios adjacentes foram ajustados ao limite municipal do Mapa Digital da Cidade (MDC).",
+    "keywords": [
+     "area_contexto_v2",
+     "features"
+    ],
+    "version_keywords": [
+     "area_contexto_v2"
+    ],
+    "similar_layers_in_capabilities": []
+   },
+   "record_filter": {
+    "field": "cd_identificador_area_contexto",
+    "equals": 27,
+    "records_in_layer": 1359,
+    "records_kept": 1
+   },
+   "fetched_at": "2026-10-05T18:37:48Z",
+   "record_count": 1,
+   "findings": [],
+   "inclusion": {
+    "included_in_metrics": 1,
+    "excluded_from_metrics": 0,
+    "excluded_by_reason": {},
+    "rules": [
+     {
+      "field": "geometry",
+      "equals": null,
+      "include": false,
+      "reason": "missing coordinates",
+      "matched": 0,
+      "built_in": true
+     }
+    ],
+    "overrides": []
+   },
+   "venue_grouping": null,
+   "change_vs_previous": {
+    "added": null,
+    "removed": null,
+    "note": "No previous completed run with this source."
+   },
+   "pct_missing_coordinates": 0.0,
+   "pct_outside_city_boundary": null,
+   "pct_outside_city_boundary_note": "Not applicable (not a service layer).",
+   "outside_city_boundary": null,
+   "duplicates_flagged": null,
+   "pct_classified_by_ai": null,
+   "fields_over_empty_threshold": {},
+   "empty_threshold_pct": 20.0,
+   "attribute_empty_pct": {
+    "cd_identificador_area_contexto": 0.0,
+    "nm_area_contexto": 0.0,
+    "cd_tipo_area_contexto": 0.0,
+    "sg_fonte_original": 0.0
+   },
+   "census_suppression": null,
+   "internal_hosts_in_metadata": [],
+   "internal_hosts_in_data": [],
+   "confidence": null,
+   "confidence_rule": null,
+   "pending": {
+    "duplicates_flagged": "Phase 7 (deduplication)",
+    "pct_classified_by_ai": "Phase 7 (AI classification)",
+    "confidence": "Phase 7 (confidence rules)",
+    "census_suppression": "Not applicable to this source (census sources only, Phase 5)."
+   }
+  },
+  {
+   "source_id": "sp_geosampa_corredor_onibus",
+   "name": "Bus corridors in operation (display only)",
+   "publisher": "GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)",
+   "layer": "geoportal:corredor_onibus",
+   "role": "context",
+   "category": null,
+   "map_initially_visible": true,
+   "layer_check": {
+    "layer_configured": "geoportal:corredor_onibus",
+    "type_name_queried": "geoportal:corredor_onibus",
+    "layer_in_capabilities": true,
+    "title": "Corredores",
+    "abstract": "Corredores de Ônibus da cidade de São Paulo de acordo com levantamento realizado pelo Planejamento da SPTrans. Situam-se à esquerda da pista e possuem paradas maiores. Táxis podem circular de 2ª a 6ª, no horário das 9h00 às 16h00, com passageiro, de 2ª a 6ª, no horário das 20h00 às 06h00 do dia seguinte, com ou sem passageiro e aos sábados, domingos e feriados por período integral, com ou sem passageiro.",
+    "keywords": [
+     "corredor_onibus",
+     "features"
+    ],
+    "version_keywords": [],
+    "similar_layers_in_capabilities": []
+   },
+   "record_filter": {
+    "field": "dc_tipo_status_corredor_onibus",
+    "equals": "Em Operação",
+    "records_in_layer": 45,
+    "records_kept": 40
+   },
+   "fetched_at": "2026-10-05T18:37:50Z",
+   "record_count": 40,
+   "findings": [],
+   "inclusion": {
+    "included_in_metrics": 40,
+    "excluded_from_metrics": 0,
+    "excluded_by_reason": {},
+    "rules": [
+     {
+      "field": "geometry",
+      "equals": null,
+      "include": false,
+      "reason": "missing coordinates",
+      "matched": 0,
+      "built_in": true
+     }
+    ],
+    "overrides": []
+   },
+   "venue_grouping": null,
+   "change_vs_previous": {
+    "added": null,
+    "removed": null,
+    "note": "No previous completed run with this source."
+   },
+   "pct_missing_coordinates": 0.0,
+   "pct_outside_city_boundary": null,
+   "pct_outside_city_boundary_note": "Not applicable (not a service layer).",
+   "outside_city_boundary": null,
+   "duplicates_flagged": null,
+   "pct_classified_by_ai": null,
+   "fields_over_empty_threshold": {},
+   "empty_threshold_pct": 20.0,
+   "attribute_empty_pct": {
+    "cd_identificador": 0.0,
+    "cd_identificador_original": 0.0,
+    "nm_corredor": 0.0,
+    "an_corredor": 17.5,
+    "tx_observacao": 0.0,
+    "qt_quilometro": 0.0,
+    "dt_atualizacao": 0.0,
+    "nm_origem": 0.0,
+    "tx_municipio": 0.0,
+    "dc_tipo_status_corredor_onibus": 0.0,
+    "cd_tipo_status_corredor_onibus": 0.0
+   },
+   "census_suppression": null,
+   "internal_hosts_in_metadata": [],
+   "internal_hosts_in_data": [],
+   "confidence": null,
+   "confidence_rule": null,
+   "pending": {
+    "duplicates_flagged": "Phase 7 (deduplication)",
+    "pct_classified_by_ai": "Phase 7 (AI classification)",
+    "confidence": "Phase 7 (confidence rules)",
+    "census_suppression": "Not applicable to this source (census sources only, Phase 5)."
+   }
+  },
+  {
+   "source_id": "sp_geosampa_cras_coverage",
+   "name": "CRAS coverage areas (not facility locations)",
+   "publisher": "GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)",
+   "layer": "geoportal:centro_referencia_assistencia_social",
+   "role": "reference",
+   "category": null,
+   "map_initially_visible": true,
+   "layer_check": {
+    "layer_configured": "geoportal:centro_referencia_assistencia_social",
+    "type_name_queried": "geoportal:centro_referencia_assistencia_social",
+    "layer_in_capabilities": true,
+    "title": "Centro de Referência de Assistência Social",
+    "abstract": "O Centro de Referência de Assistência Social – CRAS é uma unidade pública estatal de base territorial, localizada em áreas de vulnerabilidade social. Executa serviços de proteção social básica, organiza e coordena a rede de serviços socioassistenciais, locais da política de assistência social. Dada a sua capilaridade nos territórios se caracteriza como principal porta de entrada dos usuários à rede de proteção social do Sistema Único de Assistência Social – SUAS.",
+    "keywords": [
+     "centro_referencia_assistencia_social",
+     "features"
+    ],
+    "version_keywords": [],
+    "similar_layers_in_capabilities": []
+   },
+   "record_filter": null,
+   "fetched_at": "2026-10-05T18:37:51Z",
+   "record_count": 58,
+   "findings": [],
+   "inclusion": {
+    "included_in_metrics": 58,
+    "excluded_from_metrics": 0,
+    "excluded_by_reason": {},
+    "rules": [
+     {
+      "field": "geometry",
+      "equals": null,
+      "include": false,
+      "reason": "missing coordinates",
+      "matched": 0,
+      "built_in": true
+     }
+    ],
+    "overrides": []
+   },
+   "venue_grouping": null,
+   "change_vs_previous": {
+    "added": null,
+    "removed": null,
+    "note": "No previous completed run with this source."
+   },
+   "pct_missing_coordinates": 0.0,
+   "pct_outside_city_boundary": null,
+   "pct_outside_city_boundary_note": "Not applicable (not a service layer).",
+   "outside_city_boundary": null,
+   "duplicates_flagged": null,
+   "pct_classified_by_ai": null,
+   "fields_over_empty_threshold": {},
+   "empty_threshold_pct": 20.0,
+   "attribute_empty_pct": {
+    "cd_identificador_centro": 0.0,
+    "qt_area_abrangencia_centro": 0.0,
+    "nm_cras": 0.0,
+    "dt_carga": 0.0,
+    "sg_fonte_original": 0.0
+   },
+   "census_suppression": null,
+   "internal_hosts_in_metadata": [],
+   "internal_hosts_in_data": [],
+   "confidence": null,
+   "confidence_rule": null,
+   "pending": {
+    "duplicates_flagged": "Phase 7 (deduplication)",
+    "pct_classified_by_ai": "Phase 7 (AI classification)",
+    "confidence": "Phase 7 (confidence rules)",
+    "census_suppression": "Not applicable to this source (census sources only, Phase 5)."
+   }
+  }
+ ]
+}
