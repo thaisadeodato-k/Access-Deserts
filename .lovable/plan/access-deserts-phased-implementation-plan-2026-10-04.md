@@ -1,3 +1,5 @@
+> **SUPERSEDED (2026-10-05)** by `CLAUDE.md` in the repository root. Kept for history only. The pipeline now runs in Python on GitHub Actions and writes static files to `public/data/`; configuration lives in `pipeline/config/*.yaml`.
+
 # Access Deserts — Phased Implementation Plan
 
 São Paulo first. Adding a city means adding configuration rows (city, boundary layer, sources), not new code. I stop after each phase and report what works, what failed, and what I could not verify. Then I wait for your approval before starting the next phase. I will not guess layer names, URLs or field names. Anything I have not verified is marked as unverified and shown in Admin for you to approve.

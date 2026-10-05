@@ -10,7 +10,9 @@
 <!-- LOVABLE:END -->
 
 ## Access Deserts architecture
-- City-specific behaviour lives in `cities`/`sources` rows; pipeline code is generic per protocol adapter — so adding a city is configuration, not code.
-- External data is fetched only in server functions/server routes (never edge functions, never the browser) — sources are plain http and block CORS.
-- Admin actions check an httpOnly cookie derived from the `ADMIN_KEY` secret on every server call; writes use the service-role client, public tables are read-only to anon.
-- Pipeline results are stored per `run_id` and never overwritten — snapshots must be reproducible.
+**`CLAUDE.md` is the source of truth** for architecture, data sources, method and phases. In short:
+- The data pipeline is Python (`/pipeline`), run by GitHub Actions. It writes static run files to `public/data/runs/{run_id}/` and never overwrites a run.
+- The frontend reads only files under `public/data/`. It never calls external data sources.
+- Source and parameter configuration lives in `pipeline/config/*.yaml`, not in database rows. Adding a city is configuration, not code.
+- The Lovable Cloud tables, `/admin` and the Supabase integration are kept for now but new code must not depend on them (see "To retire later" in `CLAUDE.md`).
+- `.lovable/plan/access-deserts-phased-implementation-plan-2026-10-04.md` is **superseded** by `CLAUDE.md`.
