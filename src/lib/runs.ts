@@ -30,6 +30,8 @@ export type RunInfo = {
   started_at: string;
   finished_at: string;
   errors: unknown[];
+  /** Files written by the run (relative to the run folder); older runs list fewer. */
+  outputs?: string[];
 };
 
 /** kind: "empty_field" (highlight_fields), "rule_matches", "include_rule_without_effect". */
@@ -47,8 +49,15 @@ export type QualitySource = {
   fetched_at: string;
   record_count: number;
   pct_missing_coordinates: number | null;
+  role?: string;
+  category?: string | null;
   findings: QualityFinding[];
-  inclusion: { included_in_metrics: number; excluded_from_metrics: number };
+  inclusion: {
+    included_in_metrics: number;
+    excluded_from_metrics: number;
+    excluded_by_reason?: Record<string, number>;
+  };
+  pct_outside_city_boundary?: number | null;
   confidence: string | null;
 };
 
@@ -72,6 +81,7 @@ export type ServiceProperties = {
   included_in_metrics: boolean;
   exclusion_reason: string | null;
   override_reason: string | null;
+  venue_id?: string | null;
 };
 
 export type ServiceFeature = {
@@ -82,7 +92,21 @@ export type ServiceFeature = {
 
 export type Services = { type: "FeatureCollection"; features: ServiceFeature[] };
 
-export type RunData = { entry: RunIndexEntry; run: RunInfo; quality: Quality; services: Services };
+/** Display-only geometry: the city boundary and context layers (districts, corridors). */
+export type GeoCollection = {
+  type: "FeatureCollection";
+  features: { type: "Feature"; geometry: unknown; properties: Record<string, unknown> }[];
+};
+
+export type RunData = {
+  entry: RunIndexEntry;
+  run: RunInfo;
+  quality: Quality;
+  services: Services;
+  boundary: GeoCollection | null;
+  /** Context layers keyed by source_id. */
+  context: Record<string, GeoCollection>;
+};
 
 export type SnapshotLookup =
   | { kind: "found"; entry: RunIndexEntry }
@@ -133,5 +157,16 @@ export async function fetchRunData(entry: RunIndexEntry): Promise<RunData> {
     fetchJson<Quality>(`${entry.path}quality.json`),
     fetchJson<Services>(`${entry.path}services.geojson`),
   ]);
-  return { entry, run, quality, services };
+  const outputs = run.outputs ?? [];
+  const contextFiles = outputs.filter((o) => o.startsWith("context/") && o.endsWith(".geojson"));
+  const [boundary, ...contextData] = await Promise.all([
+    outputs.includes("boundary.geojson")
+      ? fetchJson<GeoCollection>(`${entry.path}boundary.geojson`)
+      : Promise.resolve(null),
+    ...contextFiles.map((o) => fetchJson<GeoCollection>(`${entry.path}${o}`)),
+  ]);
+  const context = Object.fromEntries(
+    contextFiles.map((o, i) => [o.slice("context/".length, -".geojson".length), contextData[i]!]),
+  );
+  return { entry, run, quality, services, boundary, context };
 }
