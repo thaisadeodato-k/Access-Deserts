@@ -107,12 +107,15 @@ Layer inventory 5 Oct 2026 (`python -m pipeline.access_deserts.inventory`; repor
 - `area_contexto` as served is 86 MB (whole state); fetch only the São Paulo feature for the boundary check.
 
 ### 2. IBGE Census 2022 (demand)
-- São Paulo municipality code: 3550308. Join key: tract code (CD_SETOR).
-- Tract geometry: IBGE 2022 census tract mesh.
-- Population: from `geoportal:densidade_demografica` if available; otherwise IBGE "Agregados por Setores Censitários – Resultados do Universo" (2022).
-- Income: `Agregados_por_setores_renda_responsavel_BR.csv`, field V06004 (average household-head income). National file: download once, filter to 3550308, keep only that subset (cache it; do not commit large raw files).
-- IBGE suppresses values for tracts with fewer than 5 permanent private households: treat as MISSING (never zero), exclude from medians, report count and share in quality.json.
-- Exact download URLs are NOT verified: find them on the IBGE downloads portal and show them to me before the first run.
+URLs verified (HTTP 200) and approved for download on 5 Oct 2026. Base: `https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/`. File names carry date suffixes; check the directory listing if a download returns 404.
+- Income: `Agregados_por_Setores_Censitarios_Rendimento_do_Responsavel/Agregados_por_setores_renda_responsavel_BR_20260508_csv.zip` (9.4 MB; contains `Agregados_por_setores_renda_responsavel_BR.csv`, UTF-8, `;`, decimal point). Dictionary: `…/dicionario_de_dados_renda_responsavel_20260508.xlsx`.
+- Basic aggregates (population, households): `Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_basico_BR_20260520.zip` (15.4 MB; `Agregados_por_setores_basico_BR.csv`, Latin-1, `;`, decimal comma; columns lower case `v0001`…). Dictionary: `Agregados_por_Setores_Censitarios/dicionario_de_dados_agregados_por_setores_censitarios_20260520.xlsx`.
+- Tract mesh (not needed, see below): `Agregados_por_Setores_Censitarios/malha_com_atributos/setores/gpkg/UF/SP/SP_setores_CD2022.gpkg` (182 MB).
+- Variables (confirmed in the dictionaries): V06004 = average nominal monthly income of household heads WITH income, occupied permanent private dwellings (V06006 = median; V06001 = household heads). v0001 = total persons; v0007 = occupied private households (DPPO + DPIO); v0002 = all dwellings incl. vacant and collective.
+- São Paulo municipality code: 3550308; join key: tract code CD_SETOR (15 digits; the income file has no municipality column, filter by prefix). 27,301 tracts in the basic file; 26,889 in the income file (the 412 absent tracts have 0 persons and 0 households).
+- Suppression (5.1 verification, 5 Oct 2026): V06004 is "X" in 212 tracts (10,979 persons) and "." in 5 tracts (946 persons); the downloaded dictionaries do not explain either code. Most "X" tracts have 1–4 occupied households, but 10 have 10 or more (up to 322), so the rule is not only "fewer than 5 households". Both are treated as MISSING (never zero), excluded from medians, count and share reported in quality.json.
+- Population and geometry: `geoportal:densidade_demografica` (GeoSampa, 2022 tracts, 27,301 features, 47.7 MB, stable ids, needs SORTBY) matches IBGE exactly: same 27,301 tract codes, `qt_populacao` = v0001 in every tract (total 11,451,999), identical areas. Its `qt_domicilio` equals v0002 (all dwellings), NOT occupied households: use IBGE v0007 / V06001 for household weights.
+- `cd_indice_vulnerabilidade_social` in the GeoSampa layer = IPVS 2022 (Índice Paulista de Vulnerabilidade Social, Fundação SEADE, based on the 2022 Census; GeoSampa layer `geoportal:indice_paulista_vulnerabilidadesocial`, same codes). Codes 1–6: group 1 "baixíssima vulnerabilidade" … group 6 "vulnerabilidade muito alta" (groups 4–6 "vulneráveis"); 1,426 tracts unclassified (null). Label field empty in GeoSampa; names of groups 2–5 not verified. Comparison only, never replaces the approved vulnerability formula.
 
 ### 3. National adapters (last phase only, after approval)
 - OpenStreetMap via Overpass (`https://overpass-api.de/api/interpreter`): amenity=school, amenity=library, leisure=park, highway=bus_stop, public_transport=station, railway=station. No reliable OSM tag for CRAS: mark "not available from OSM".

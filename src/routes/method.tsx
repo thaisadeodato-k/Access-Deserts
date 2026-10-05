@@ -41,6 +41,7 @@ const SECTIONS = [
     title: "Limitations",
     body: [
       "Edge effect: GeoSampa only covers services inside São Paulo. Areas near the municipal border may appear less served than they are, because nearby services in neighbouring municipalities are missing. The few records outside the boundary that GeoSampa does include (mainly train stations and bus terminals) are kept.",
+      "Area-weighted interpolation: population and income are moved from census tracts to hexagons in proportion to area, which assumes people are spread evenly within each tract. Large tracts that are partly uninhabited (for example reservoirs and protected areas in the far south) spread their population over empty land. Dasymetric interpolation, using land-use data to place people only where they live, is possible future work.",
       "[TO BE COMPLETED]",
     ],
   },
