@@ -1,0 +1,140 @@
+{
+ "run_id": "2026-10-05-f4248a",
+ "city_code": "sp",
+ "city_name": "São Paulo",
+ "status": "completed",
+ "started_at": "2026-10-05T13:50:17Z",
+ "finished_at": "2026-10-05T13:50:20Z",
+ "code_version": {
+  "git_commit": "456e898a444630bf7a43adac3081ae1e09bcab85"
+ },
+ "environment": {
+  "runner": "github-actions",
+  "python": "3.13.15"
+ },
+ "parameters": {
+  "h3_resolution": 8,
+  "service_threshold_m": 1000,
+  "transit_threshold_m": 500,
+  "desert_rule": "population above city median AND zero services of the category within service_threshold_m",
+  "vulnerability_formula": "inverse percentile of average household-head income (IBGE Census 2022, V06004)",
+  "population_income_method": "area-weighted from census tracts",
+  "polygon_distance_method": "distance to nearest edge; fallback to centroid (recorded per run)",
+  "wfs": {
+   "page_size": 1000,
+   "timeout_s": 120,
+   "retries": 3,
+   "max_pages": 500
+  },
+  "quality": {
+   "empty_field_threshold": 0.2
+  }
+ },
+ "steps": {
+  "executed": [
+   "fetch",
+   "normalise",
+   "quality"
+  ],
+  "pending": [
+   "classify + deduplicate (Phase 7)",
+   "grid (Phase 5)",
+   "metrics (Phase 6)"
+  ]
+ },
+ "polygon_distance": {
+  "method_used": null,
+  "note": "No polygon service sources in this run."
+ },
+ "capabilities": [
+  {
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities",
+   "http_status": 200,
+   "bytes": 422605,
+   "sha256": "4109875268e697100bf83dc33d603061d787af2353a6813711e6669f4593ffa4",
+   "raw_file": "capabilities.xml",
+   "layers_listed": 483
+  }
+ ],
+ "sources": [
+  {
+   "source_id": "sp_geosampa_saude_ubs",
+   "layer": "geoportal:equipamento_saude_ubs_posto_centro",
+   "endpoint_url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs",
+   "role": "service",
+   "category": "health_ubs",
+   "subcategory": null,
+   "sort_by": null,
+   "field_map": {
+    "name": "nm_equipamento",
+    "address": [
+     "tx_endereco_equipamento",
+     "nm_bairro_equipamento",
+     "cd_cep_equipamento"
+    ]
+   },
+   "inclusion_rules": [
+    {
+     "field": "nm_esfera_administrativa_equipamento",
+     "equals": "Estadual",
+     "include": true,
+     "reason": "state-run (public service)"
+    },
+    {
+     "field": "nm_esfera_administrativa_equipamento",
+     "equals": "Privado",
+     "include": false,
+     "reason": "private provider"
+    },
+    {
+     "field": "nm_tipo_equipamento",
+     "equals": "SEM TIPO",
+     "include": false,
+     "reason": "missing type, needs review"
+    }
+   ],
+   "highlight_fields": {
+    "tx_horario_funcionamento": "Opening hours"
+   },
+   "fetched_at": "2026-10-05T13:50:18Z",
+   "number_matched_reported": 483,
+   "features_returned": 483,
+   "features_normalised": 483,
+   "features_included_in_metrics": 479,
+   "count_check": "ok",
+   "crs": {
+    "declared_crs": "urn:ogc:def:crs:EPSG::4326",
+    "coordinate_votes": {
+     "lonlat": 483
+    },
+    "action": "none (lon/lat WGS84 as returned)"
+   },
+   "raw_dir": "sp_geosampa_saude_ubs/",
+   "pages": [
+    {
+     "url": "http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=geoportal%3Aequipamento_saude_ubs_posto_centro&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG%3A4326&COUNT=1000&STARTINDEX=0",
+     "http_status": 200,
+     "bytes": 677514,
+     "sha256": "4614bad0ee005cfd6fe42763ca4843ab720d0f99bfbe40f4dceb029d5cebf9f9",
+     "raw_file": "page_0000.json",
+     "features": 483
+    }
+   ]
+  }
+ ],
+ "raw_storage": {
+  "committed": false,
+  "local_path": "pipeline/cache/raw/2026-10-05-f4248a/",
+  "github_artifact": "raw-2026-10-05-f4248a",
+  "artifact_retention_days": 90,
+  "release": null,
+  "note": "Raw responses are not committed; page hashes (sha256) are listed per source. Snapshot runs get their raw files attached to a GitHub Release."
+ },
+ "errors": [],
+ "outputs": [
+  "services.geojson",
+  "quality.json",
+  "run.json"
+ ]
+}

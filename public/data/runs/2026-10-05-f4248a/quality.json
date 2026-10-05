@@ -1,0 +1,110 @@
+{
+ "run_id": "2026-10-05-f4248a",
+ "city_code": "sp",
+ "generated_at": "2026-10-05T13:50:20Z",
+ "sources": [
+  {
+   "source_id": "sp_geosampa_saude_ubs",
+   "name": "Basic health units (UBS / health posts / health centres)",
+   "publisher": "GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo)",
+   "layer": "geoportal:equipamento_saude_ubs_posto_centro",
+   "fetched_at": "2026-10-05T13:50:18Z",
+   "record_count": 483,
+   "findings": [
+    {
+     "highlight": true,
+     "field": "tx_horario_funcionamento",
+     "label": "Opening hours",
+     "pct_empty": 100.0,
+     "text": "Opening hours (tx_horario_funcionamento) is 100% empty in this run."
+    }
+   ],
+   "inclusion": {
+    "included_in_metrics": 479,
+    "excluded_from_metrics": 4,
+    "rules": [
+     {
+      "field": "nm_esfera_administrativa_equipamento",
+      "equals": "Estadual",
+      "include": true,
+      "reason": "state-run (public service)",
+      "matched": 2
+     },
+     {
+      "field": "nm_esfera_administrativa_equipamento",
+      "equals": "Privado",
+      "include": false,
+      "reason": "private provider",
+      "matched": 2
+     },
+     {
+      "field": "nm_tipo_equipamento",
+      "equals": "SEM TIPO",
+      "include": false,
+      "reason": "missing type, needs review",
+      "matched": 4
+     },
+     {
+      "field": "geometry",
+      "equals": null,
+      "include": false,
+      "reason": "missing coordinates",
+      "matched": 0,
+      "built_in": true
+     }
+    ]
+   },
+   "change_vs_previous": {
+    "added": 0,
+    "removed": 0,
+    "note": null
+   },
+   "pct_missing_coordinates": 0.0,
+   "pct_outside_city_boundary": null,
+   "pct_outside_city_boundary_note": "Pending: city boundary not yet chosen (Phase 4).",
+   "duplicates_flagged": null,
+   "pct_classified_by_ai": null,
+   "fields_over_empty_threshold": {
+    "tx_horario_funcionamento": 100.0,
+    "cd_equipamento_base_origem": 100.0
+   },
+   "empty_threshold_pct": 20.0,
+   "attribute_empty_pct": {
+    "cd_identificador": 0.0,
+    "cd_identificador_tema_equipamento": 0.0,
+    "nm_tema_equipamento": 0.0,
+    "cd_identificador_rede_equipamento": 0.0,
+    "nm_rede_equipamento": 0.0,
+    "tx_rede_equipamento": 0.0,
+    "cd_identificador_tipo_equipamento": 0.0,
+    "nm_tipo_equipamento": 0.0,
+    "tx_tipo_equipamento": 0.0,
+    "cd_identificador_classe_equipamento": 0.0,
+    "nm_classe_equipamento": 0.0,
+    "tx_classe_equipamento": 0.0,
+    "cd_identificador_esfera_administrativa_equipamento": 0.0,
+    "nm_esfera_administrativa_equipamento": 0.0,
+    "tx_esfera_administrativa_equipamento": 0.0,
+    "cd_equipamento": 0.0,
+    "nm_equipamento": 0.0,
+    "tx_endereco_equipamento": 0.0,
+    "nm_bairro_equipamento": 0.0,
+    "cd_cep_equipamento": 0.0,
+    "tx_horario_funcionamento": 100.0,
+    "tx_numero_telefone": 1.04,
+    "cd_equipamento_base_origem": 100.0
+   },
+   "census_suppression": null,
+   "internal_hosts_in_metadata": [],
+   "internal_hosts_in_data": [],
+   "confidence": null,
+   "confidence_rule": null,
+   "pending": {
+    "duplicates_flagged": "Phase 7 (deduplication)",
+    "pct_classified_by_ai": "Phase 7 (AI classification)",
+    "confidence": "Phase 7 (confidence rules)",
+    "census_suppression": "Not applicable to this source (census sources only, Phase 5)."
+   }
+  }
+ ]
+}
