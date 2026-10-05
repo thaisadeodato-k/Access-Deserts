@@ -15,7 +15,7 @@ import subprocess
 import sys
 import traceback
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 import requests
 
@@ -24,7 +24,7 @@ from .adapters import wfs
 from .crs import ensure_lonlat
 from .normalise import normalise_services
 from .output import create_run_dir, new_run_id, now_iso, previous_feature_ids, update_index, write_json
-from .quality import source_quality
+from .quality import layer_check, source_quality
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 USER_AGENT = "access-deserts-pipeline (+https://github.com/thaisadeodato-k/Access-Deserts)"
@@ -39,6 +39,14 @@ def _git_commit() -> str | None:
         return subprocess.run(["git", "rev-parse", "HEAD"], cwd=REPO_ROOT, capture_output=True, text=True, check=True).stdout.strip()
     except (OSError, subprocess.CalledProcessError):
         return None
+
+
+def _type_name_queried(pages: list[dict]) -> str | None:
+    """TYPENAMES of the GetFeature request actually sent (first page), as the server received it."""
+    if not pages:
+        return None
+    values = parse_qs(urlparse(pages[0]["url"]).query).get("TYPENAMES")
+    return values[0] if values else None
 
 
 def _process_source(session, source, city, params, raw_root, caps, runs_dir):
@@ -61,6 +69,7 @@ def _process_source(session, source, city, params, raw_root, caps, runs_dir):
     res = wfs.fetch_layer(session, source, raw_dir, params["wfs"])
     features, crs_record = ensure_lonlat(res["features"], city["wgs84_envelope"], city["native_crs"], res["declared_crs"])
     services = normalise_services(features, source)
+    layer_info = layer_check(source["layer"], _type_name_queried(res["pages"]), layers)
 
     quality = source_quality(
         source=source,
@@ -71,10 +80,13 @@ def _process_source(session, source, city, params, raw_root, caps, runs_dir):
         internal_host_pattern=city["internal_host_pattern"],
         empty_threshold=params["quality"]["empty_field_threshold"],
         previous_ids=previous_feature_ids(runs_dir, city["city_code"], source["source_id"]),
+        layer_info=layer_info,
     )
     record = {
         "source_id": source["source_id"],
         "layer": source["layer"],
+        "type_name_queried": layer_info["type_name_queried"],
+        "layer_check": layer_info,
         "endpoint_url": endpoint,
         "role": source["role"],
         "category": source.get("category"),
@@ -82,6 +94,7 @@ def _process_source(session, source, city, params, raw_root, caps, runs_dir):
         "sort_by": source.get("sort_by"),
         "field_map": source.get("field_map"),
         "inclusion_rules": source.get("inclusion_rules"),
+        "record_overrides": source.get("record_overrides") or [],
         "highlight_fields": source.get("highlight_fields"),
         "fetched_at": fetched_at,
         "number_matched_reported": res["number_matched"],

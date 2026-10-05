@@ -145,7 +145,7 @@ function LayerCard({
           {source.confidence ?? "confidence rating not yet computed"}
         </p>
         {highlighted.map((f) => (
-          <p key={f.field} className="mt-1">
+          <p key={f.text} className="mt-1">
             {f.text}
           </p>
         ))}

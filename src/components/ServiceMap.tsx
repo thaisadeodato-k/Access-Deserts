@@ -32,6 +32,8 @@ function popupContent(p: ServiceProperties): HTMLElement {
   };
   add("p", p.name ?? "(no name in source)", "font-semibold text-sm");
   if (p.address) add("p", p.address);
+  if (p.equipment_type) add("p", `Type: ${p.equipment_type}`);
+  if (p.administrative_sphere) add("p", `Administrative sphere: ${p.administrative_sphere}`);
   add(
     "p",
     p.included_in_metrics
@@ -39,6 +41,7 @@ function popupContent(p: ServiceProperties): HTMLElement {
       : `Excluded from metrics: ${p.exclusion_reason ?? "no reason recorded"}`,
     p.included_in_metrics ? "" : "font-medium",
   );
+  if (p.override_reason) add("p", `Decided by an approved record override: ${p.override_reason}`);
   add("p", p.id, "font-mono text-[10px] text-muted-foreground break-all");
   return el;
 }

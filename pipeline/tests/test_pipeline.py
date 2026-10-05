@@ -10,7 +10,7 @@ from pipeline.access_deserts.adapters import wfs
 from pipeline.access_deserts.crs import ensure_lonlat
 from pipeline.access_deserts.normalise import normalise_services
 from pipeline.access_deserts.output import create_run_dir, read_index, update_index
-from pipeline.access_deserts.quality import source_quality
+from pipeline.access_deserts.quality import layer_check, source_quality
 from pipeline.access_deserts.run import run
 
 ENV = [-46.8346, -24.0123, -46.3636, -23.3538]
@@ -119,7 +119,8 @@ def test_normalise_without_field_map_keeps_every_record():
     out = normalise_services([feat(0), feat(1, coords=None)], SOURCE)
     assert out[0]["properties"] == {"id": "s1:test.0", "source_id": "s1", "name": None, "category": "health_ubs",
                                     "subcategory": None, "geometry_type": "Point", "address": None,
-                                    "included_in_metrics": True, "exclusion_reason": None}
+                                    "equipment_type": None, "administrative_sphere": None,
+                                    "included_in_metrics": True, "exclusion_reason": None, "override_reason": None}
     assert out[1]["geometry"] is None
     assert out[1]["properties"]["included_in_metrics"] is False
     assert out[1]["properties"]["exclusion_reason"] == "missing coordinates"
@@ -147,15 +148,73 @@ def test_bad_inclusion_rule_is_rejected(tmp_path):
 def test_highlighted_finding():
     src = {**SOURCE, "highlight_fields": {"empty": "Opening hours", "absent": "Absent"}}
     f = source_quality(src, [feat(0), feat(1)], set(), "t", [], r"\.prodam$", 0.2, None)["findings"]
-    assert f[0] == {"highlight": True, "field": "empty", "label": "Opening hours", "pct_empty": 100.0,
-                    "text": "Opening hours (empty) is 100% empty in this run."}
+    assert f[0] == {"kind": "empty_field", "highlight": True, "field": "empty", "label": "Opening hours",
+                    "pct_empty": 100.0, "text": "Opening hours (empty) is 100% empty in this run."}
     assert "not present" in f[1]["text"]
 
 
 def test_normalise_with_field_map():
-    src = {**SOURCE, "field_map": {"name": "nm", "address": ["addr", "missing"]}}
-    p = normalise_services([feat(0)], src)[0]["properties"]
+    src = {**SOURCE, "field_map": {"name": "nm", "address": ["addr", "missing"], "type": "tipo", "sphere": "esfera"}}
+    p = normalise_services([feat(0, tipo="UBS", esfera="Municipal")], src)[0]["properties"]
     assert p["name"] == "Unit 0" and p["address"] == "Rua X"
+    assert (p["equipment_type"], p["administrative_sphere"]) == ("UBS", "Municipal")
+
+
+def test_unknown_field_map_key_is_rejected(tmp_path):
+    (tmp_path / "sources.yaml").write_text(yaml.safe_dump({"sources": [{**SOURCE, "field_map": {"phone": "x"}}]}))
+    with pytest.raises(ValueError):
+        cfg.load_sources(tmp_path)
+
+
+OVERRIDE = {"feature_id": "test.3", "include": True, "reason": "state health centre (verified)",
+            "evidence": "CNES record", "approved_on": "2026-10-06"}
+
+
+def test_record_override_includes_one_record_and_is_reported():
+    src = {**SOURCE, "inclusion_rules": RULES, "field_map": {"name": "nm", "sphere": "esfera"},
+           "record_overrides": [OVERRIDE, {**OVERRIDE, "feature_id": "test.99"}]}
+    fs = [feat(0), feat(3, tipo="SEM TIPO", esfera="Estadual")]
+    p = [f["properties"] for f in normalise_services(fs, src)]
+    assert p[1]["included_in_metrics"] is True and p[1]["exclusion_reason"] is None
+    assert p[1]["override_reason"] == "state health centre (verified)" and p[0]["override_reason"] is None
+    inc = source_quality(src, fs, set(), "t", [], r"\.prodam$", 0.2, None)["inclusion"]
+    assert (inc["included_in_metrics"], inc["excluded_from_metrics"]) == (2, 0)
+    found, missing = inc["overrides"]
+    assert found["applied"] and found["rule_result"] == "excluded: missing type, needs review"
+    assert not missing["found"] and not missing["applied"]
+
+
+def test_override_cannot_include_a_record_without_coordinates():
+    src = {**SOURCE, "record_overrides": [OVERRIDE]}
+    p = normalise_services([feat(3, coords=None)], src)[0]["properties"]
+    assert p["included_in_metrics"] is False and p["exclusion_reason"] == "missing coordinates"
+    assert p["override_reason"] is None
+
+
+def test_incomplete_override_is_rejected(tmp_path):
+    bad = {**OVERRIDE, "evidence": ""}
+    (tmp_path / "sources.yaml").write_text(yaml.safe_dump({"sources": [{**SOURCE, "record_overrides": [bad]}]}))
+    with pytest.raises(ValueError):
+        cfg.load_sources(tmp_path)
+
+
+def test_rule_findings_list_records_and_include_rules_without_effect():
+    src = {**SOURCE, "inclusion_rules": RULES, "field_map": {"name": "nm", "sphere": "esfera"}}
+    fs = [feat(0, esfera="Municipal"), feat(1, esfera="Estadual", tipo="SEM TIPO"), feat(2, esfera="Privado", tipo="SEM TIPO")]
+    f = {x["kind"] + ":" + x["rule_reason"]: x for x in source_quality(src, fs, set(), "t", [], r"\.prodam$", 0.2, None)["findings"]}
+    no_type = f["rule_matches:missing type, needs review"]
+    assert no_type["count"] == 2 and "Unit 1 (Estadual); Unit 2 (Privado)" in no_type["text"]
+    no_effect = f["include_rule_without_effect:state-run (public service)"]
+    assert no_effect["count"] == 1 and no_effect["records"][0]["feature_id"] == "test.1"
+
+
+def test_layer_check_records_version_names():
+    layers = {"geoportal:a": {"title": "A", "abstract": "", "keywords": ["a_v2", "features"], "urls": []},
+              "geoportal:a_v3": {"title": "A3", "abstract": "", "keywords": [], "urls": []},
+              "geoportal:b": {"title": "B", "abstract": "", "keywords": [], "urls": []}}
+    c = layer_check("geoportal:a", "geoportal:a", layers)
+    assert c["layer_in_capabilities"] and c["version_keywords"] == ["a_v2"]
+    assert c["similar_layers_in_capabilities"] == ["geoportal:a_v3"]
 
 
 def test_quality_metrics():
@@ -219,5 +278,7 @@ def test_end_to_end_two_runs(tmp_path):
     assert q2["sources"][0]["change_vs_previous"] == {"added": 2, "removed": 1, "note": None}
     r2 = json.loads((data / "runs" / rid2 / "run.json").read_text(encoding="utf-8"))
     assert r2["sources"][0]["count_check"] == "ok" and r2["raw_storage"]["committed"] is False
+    assert r2["sources"][0]["type_name_queried"] == "geoportal:test"
+    assert q2["sources"][0]["layer_check"]["layer_in_capabilities"] is True
     assert read_index(data / "runs")["latest"]["sp"] == rid2
     assert (tmp_path / "cache" / "raw" / rid1 / "s1" / "page_0000.json").exists()

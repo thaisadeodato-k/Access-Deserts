@@ -32,11 +32,10 @@ export type RunInfo = {
   errors: unknown[];
 };
 
+/** kind: "empty_field" (highlight_fields), "rule_matches", "include_rule_without_effect". */
 export type QualityFinding = {
+  kind: string;
   highlight: boolean;
-  field: string;
-  label: string;
-  pct_empty: number;
   text: string;
 };
 
@@ -68,8 +67,11 @@ export type ServiceProperties = {
   subcategory: string | null;
   geometry_type: string | null;
   address: string | null;
+  equipment_type: string | null;
+  administrative_sphere: string | null;
   included_in_metrics: boolean;
   exclusion_reason: string | null;
+  override_reason: string | null;
 };
 
 export type ServiceFeature = {

@@ -9,6 +9,8 @@ import yaml
 CONFIG_DIR = Path(__file__).resolve().parent.parent / "config"
 PROTOCOLS = {"wfs", "csv", "geojson", "overpass", "api"}
 REQUIRED_SOURCE_KEYS = ("source_id", "city_code", "name", "publisher", "layer", "endpoint_url", "protocol", "role", "approved")
+FIELD_MAP_KEYS = {"name", "address", "type", "sphere"}
+OVERRIDE_KEYS = {"feature_id", "include", "reason", "evidence", "approved_on"}
 
 
 def _load(name: str, config_dir: Path) -> dict:
@@ -41,6 +43,17 @@ def load_sources(config_dir: Path = CONFIG_DIR) -> list[dict]:
         for r in s.get("inclusion_rules") or []:
             if set(r) != {"field", "equals", "include", "reason"} or not isinstance(r["include"], bool):
                 raise ValueError(f"Source {s['source_id']}: inclusion rule must have field, equals, include (bool), reason: {r}")
+        if set(s.get("field_map") or {}) - FIELD_MAP_KEYS:
+            raise ValueError(f"Source {s['source_id']}: unknown field_map keys {sorted(set(s['field_map']) - FIELD_MAP_KEYS)}")
+        ids = []
+        for o in s.get("record_overrides") or []:
+            if set(o) != OVERRIDE_KEYS or not isinstance(o["include"], bool) or not all(
+                    o[k] for k in ("feature_id", "reason", "evidence", "approved_on")):
+                raise ValueError(f"Source {s['source_id']}: record override must have non-empty "
+                                 f"feature_id, include (bool), reason, evidence, approved_on: {o}")
+            ids.append(o["feature_id"])
+        if len(ids) != len(set(ids)):
+            raise ValueError(f"Source {s['source_id']}: more than one override for the same feature_id")
         if s["source_id"] in seen:
             raise ValueError(f"Duplicate source_id '{s['source_id']}'")
         seen.add(s["source_id"])

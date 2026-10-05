@@ -40,11 +40,11 @@ Kept working for now, but new code must not depend on them. Retire only after th
 - Cloud secret `ADMIN_KEY` and the Supabase variables in `.env`.
 
 ## Output data model (per run)
-- `services.geojson` — normalised points: id, source_id, name, category, subcategory, geometry_type, address, included_in_metrics, exclusion_reason. Every source record is present; records without coordinates have `geometry: null`.
+- `services.geojson` — normalised points: id, source_id, name, category, subcategory, geometry_type, address, equipment_type, administrative_sphere, included_in_metrics, exclusion_reason, override_reason. Every source record is present; records without coordinates have `geometry: null`.
 - `hexagons.geojson` — H3 cells (resolution 8, configurable): h3_id, population_est, income_est, vulnerability_score, count_{category}_1km, nearest_{category}_m, transit_within_500m, desert_{category}, desert_count.
 - `districts.json` — district summaries: population, share of population in desert hexagons per category.
-- `quality.json` — per source: fetched_at, record_count, change vs previous run (added/removed), % missing coordinates, % outside city boundary, duplicates flagged, % classified by AI, fields with >20% empty values, highlighted findings, inclusion rule counts, suppressed/missing census values, unreachable or internal-only URLs found in metadata, confidence (high/medium/low) and the rule that produced it.
-- `run.json` — run_id, timestamps, parameters (thresholds, H3 resolution, desert rule, vulnerability formula, polygon distance method), sources used, errors.
+- `quality.json` — per source: fetched_at, record_count, change vs previous run (added/removed), % missing coordinates, % outside city boundary, duplicates flagged, % classified by AI, fields with >20% empty values, layer check (configured vs queried TYPENAMES, presence in GetCapabilities, `_vN` keywords and similarly named layers), findings (highlighted empty fields; records matched by exclusion rules; include rules without effect), inclusion rule counts and record overrides, suppressed/missing census values, unreachable or internal-only URLs found in metadata, confidence (high/medium/low) and the rule that produced it.
+- `run.json` — run_id, timestamps, parameters (thresholds, H3 resolution, desert rule, vulnerability formula, polygon distance method), sources used (incl. `type_name_queried`, `layer_check`, `record_overrides`), errors.
 
 ## Method (default parameters — configurable in `/pipeline/config/params.yaml`)
 - Service access threshold: 1 km from hexagon centre (≈15 min walk).
@@ -53,7 +53,8 @@ Kept working for now, but new code must not depend on them. Retire only after th
 - Vulnerability score: inverse percentile of average household-head income (IBGE V06004).
 - Population and income per hexagon: area-weighted from census tracts.
 - Polygons (parks, squares): distance to nearest edge; fallback to centroid, recorded in run.json.
-- Record inclusion: no record is ever dropped. Each service record carries `included_in_metrics` and `exclusion_reason`; rules live per source in `sources.yaml` (`inclusion_rules`), match counts go to quality.json. Built-in rule: no coordinates → excluded ("missing coordinates"). UBS layer (approved 5 Oct 2026): state-run → included (public service); private → excluded ("private provider"); type "SEM TIPO" → excluded ("missing type, needs review"). Listed on the Method page.
+- Record inclusion: no record is ever dropped. Each service record carries `included_in_metrics` and `exclusion_reason`; rules live per source in `sources.yaml` (`inclusion_rules`), match counts go to quality.json. Built-in rule: no coordinates → excluded ("missing coordinates"). UBS layer (approved 5 Oct 2026): state-run → included (public service); private → excluded ("private provider"); Type "SEM TIPO" → excluded ("missing type, needs review"). Exclusion takes precedence over inclusion: the 2 state-run records are both "SEM TIPO" and stay excluded (reported as "include_rule_without_effect"). Listed on the Method page.
+- Record overrides: `record_overrides` in `sources.yaml` ({feature_id, include, reason, evidence, approved_on}) replace the rule result for one record; only added after the author approves them with cited evidence; reported in quality.json and on the Method page; cannot include a record without coordinates. None approved yet. Proposed, not applied: include the two state-run "SEM TIPO" centres (CS Escola Geraldo de Paula Souza, CS Escola Samuel Barnsley Pessoa) once external evidence is provided. The source marks Samuel Barnsley Pessoa as "Estadual" (Secretaria de Estado da Saúde), not private; the source does not mention USP.
 - Highlighted findings: `highlight_fields` in `sources.yaml` produce computed findings in quality.json (`findings`), cited on the Reliability page and in Limitations. UBS: opening hours (`tx_horario_funcionamento`).
 
 ## Data sources — São Paulo
@@ -67,7 +68,7 @@ Layer names verified in the public GeoSampa WFS GetCapabilities on 4 Oct 2026; a
 - Paginate until a page returns fewer than COUNT features. Save raw responses before normalising.
 - Layers without a primary key reject STARTINDEX ("Cannot do natural order without a primary key") unless `SORTBY` is given: set `sort_by` in sources.yaml to a field confirmed by DescribeFeatureType (e.g. `area_contexto` → `cd_identificador_area_contexto`).
 - `*.prodam` occurrences: `http://geoportal.prodam` is only the XML namespace URI (not a host); `metadados.geosampa.prodam` appears in a MetadataURL (internal host, flagged). Internal hosts are matched with `\.prodam$`.
-- Observed 5 Oct 2026 on the UBS layer: SRSNAME=EPSG:4326 honoured, lon/lat axis order, all 483 features in one page. The pipeline still checks CRS/axis order on every run.
+- Observed 5 Oct 2026 on the UBS layer: SRSNAME=EPSG:4326 honoured, lon/lat axis order, all 483 features in one page. The pipeline still checks CRS/axis order on every run. GetCapabilities lists keyword `equipamento_saude_ubs_posto_centro_v2` for this layer (likely the underlying table); no layer with that name is published. 71 layers carry `_vN` keywords; only `geoportal:torre_alta_tensao` has a MetadataURL (the internal `metadados.geosampa.prodam` host).
 
 Layer → category:
 - school: `geoportal:equipamento_educacao_rede_publica` (primary_secondary), `geoportal:equipamento_educacao_infantil_rede_publica` (early_childhood), `geoportal:equipamento_educacao_ceu` (ceu)

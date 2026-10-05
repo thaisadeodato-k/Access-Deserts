@@ -6,13 +6,19 @@
 # Optional per-source keys:
 #   sort_by:   attribute passed as SORTBY when paging. Needed for layers without a primary key
 #              (the server then rejects STARTINDEX). Must be a field confirmed by DescribeFeatureType.
-#   field_map: maps normalised fields (name, address) to source attributes. Added only after the
-#              source's fields have been reviewed and approved; until then name/address are null.
+#   field_map: maps normalised fields (name, address, type, sphere) to source attributes.
+#              type -> equipment_type, sphere -> administrative_sphere in services.geojson.
+#              Added only after the source's fields have been reviewed and approved; until then
+#              these fields are null.
 #   inclusion_rules: list of {field, equals, include, reason}. Records are never dropped: every
 #              record stays in services.geojson with `included_in_metrics` and `exclusion_reason`.
 #              A record is excluded if it matches any rule with include: false (reasons joined
 #              with "; "). Rules with include: true only document and count an explicit decision.
 #              Match counts per rule are reported in quality.json.
+#   record_overrides: list of {feature_id, include, reason, evidence, approved_on}. Replaces the
+#              rule result for ONE record (WFS feature id). Only added after the author approves it,
+#              with the evidence cited. Reported in quality.json (inclusion.overrides) and on the
+#              Method page. An override cannot include a record without coordinates.
 #   highlight_fields: {attribute: label}. The attribute's empty share is reported as a
 #              highlighted finding in quality.json (computed each run).
 
@@ -57,9 +63,11 @@ sources:
     subcategory: null
     features_at_verification: 483
     approved: true   # approved 2026-10-05 (Phase 2)
-    field_map:       # approved 2026-10-05
+    field_map:       # approved 2026-10-05; type and sphere approved 2026-10-05 (Phase 4 plan)
       name: nm_equipamento
       address: [tx_endereco_equipamento, nm_bairro_equipamento, cd_cep_equipamento]
+      type: nm_tipo_equipamento
+      sphere: nm_esfera_administrativa_equipamento
     inclusion_rules: # approved 2026-10-05; all records stay in services.geojson
       - field: nm_esfera_administrativa_equipamento
         equals: Estadual
@@ -73,6 +81,9 @@ sources:
         equals: SEM TIPO
         include: false
         reason: missing type, needs review
+    record_overrides: [] # none approved. Proposed (not applied): include the two state-run "SEM TIPO"
+                         # centres (CS Escola Geraldo de Paula Souza, CS Escola Samuel Barnsley Pessoa)
+                         # once external evidence of their type is provided.
     highlight_fields: # reported as highlighted findings in quality.json
       tx_horario_funcionamento: Opening hours
 

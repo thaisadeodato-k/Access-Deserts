@@ -15,7 +15,7 @@ from urllib.parse import urlencode
 
 import requests
 
-NS = {"wfs": "http://www.opengis.net/wfs/2.0", "xlink": "http://www.w3.org/1999/xlink"}
+NS = {"wfs": "http://www.opengis.net/wfs/2.0", "xlink": "http://www.w3.org/1999/xlink", "ows": "http://www.opengis.net/ows/1.1"}
 URL_RE = re.compile(r"https?://[^\s\"'<>]+")
 
 
@@ -51,7 +51,7 @@ def _save(raw_path: Path, r: requests.Response) -> dict:
 
 
 def get_capabilities(session, endpoint: str, raw_dir: Path, wfs_params: dict) -> tuple[dict, dict]:
-    """Fetch GetCapabilities. Returns (page metadata, {layer_name: {"title", "urls"}})."""
+    """Fetch GetCapabilities. Returns (page metadata, {layer_name: {"title", "abstract", "keywords", "urls"}})."""
     url = f"{endpoint}?{urlencode({'SERVICE': 'WFS', 'VERSION': '2.0.0', 'REQUEST': 'GetCapabilities'})}"
     r = _get(session, url, wfs_params["timeout_s"], wfs_params["retries"])
     meta = _save(raw_dir / "capabilities.xml", r)
@@ -62,7 +62,12 @@ def get_capabilities(session, endpoint: str, raw_dir: Path, wfs_params: dict) ->
     for ft in root.iter(f"{{{NS['wfs']}}}FeatureType"):
         name = ft.findtext("wfs:Name", default="", namespaces=NS)
         hrefs = [el.get(f"{{{NS['xlink']}}}href") for el in ft.iter() if el.get(f"{{{NS['xlink']}}}href")]
-        layers[name] = {"title": ft.findtext("wfs:Title", default="", namespaces=NS), "urls": hrefs}
+        layers[name] = {
+            "title": ft.findtext("wfs:Title", default="", namespaces=NS),
+            "abstract": ft.findtext("wfs:Abstract", default="", namespaces=NS),
+            "keywords": [k.text for k in ft.iterfind("ows:Keywords/ows:Keyword", NS) if k.text],
+            "urls": hrefs,
+        }
     return meta, layers
 
 
