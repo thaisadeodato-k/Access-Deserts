@@ -10,7 +10,9 @@ Optional per-source steps (configured in sources.yaml):
   (needed where the server generates unstable ids);
 - `subcategory_rules`: records matching {field, equals} get another subcategory;
 - `venue_grouping`: records sharing the same normalised address are one venue; only one
-  record per venue is counted, the others are excluded with the configured reason.
+  record per venue is counted, the others are excluded with the configured reason;
+- `placeholder_values`: {field: [values]} replaced by null before anything else (e.g. "No"
+  in fields that never hold yes/no answers).
 """
 from __future__ import annotations
 
@@ -18,6 +20,23 @@ import re
 from collections import defaultdict
 
 MISSING_COORDINATES = "missing coordinates"
+
+
+def clean_placeholders(features: list[dict], source: dict) -> tuple[list[dict], dict[str, int]]:
+    """Replace configured placeholder values by None. Returns (features, replacements per field)."""
+    spec = source.get("placeholder_values") or {}
+    if not spec:
+        return features, {}
+    counts = {field: 0 for field in spec}
+    out = []
+    for f in features:
+        props = dict(f.get("properties") or {})
+        for field, values in spec.items():
+            if props.get(field) in values:
+                props[field] = None
+                counts[field] += 1
+        out.append({**f, "properties": props})
+    return out, counts
 
 
 def has_coords(f: dict) -> bool:
@@ -135,6 +154,7 @@ def normalise_services(features: list[dict], source: dict) -> tuple[list[dict], 
             "id": feature_key(source, f, i),
             "source_id": source["source_id"],
             "name": mapped_value(props, field_map.get("name")),
+            "name_derived": False,
             "category": source.get("category"),
             "subcategory": subcategory(props, source),
             "geometry_type": geometry["type"] if geometry else None,
@@ -144,6 +164,7 @@ def normalise_services(features: list[dict], source: dict) -> tuple[list[dict], 
             "included_in_metrics": included,
             "exclusion_reason": reason,
             "override_reason": override["reason"] if override_applies(f, override) else None,
+            "outside_boundary": None,  # set once the city boundary is known (run.py)
         }
         if grouped:
             p["venue_id"] = None

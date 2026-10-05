@@ -32,6 +32,12 @@ def _check_options(s: dict) -> None:
     for r in s.get("subcategory_rules") or []:
         if set(r) != {"field", "equals", "subcategory"}:
             raise ValueError(f"Source {sid}: subcategory rule must have field, equals, subcategory: {r}")
+    pv = s.get("placeholder_values")
+    if pv is not None and not (isinstance(pv, dict) and all(isinstance(v, list) and v for v in pv.values())):
+        raise ValueError(f"Source {sid}: placeholder_values must map fields to non-empty lists: {pv}")
+    dn = s.get("derived_name")
+    if dn is not None and set(dn) != {"from_source", "field"}:
+        raise ValueError(f"Source {sid}: derived_name must be {{from_source, field}}: {dn}")
     vg = s.get("venue_grouping")
     if vg is not None and (set(vg) != {"fields", "reason"} or not vg["fields"] or not vg["reason"]):
         raise ValueError(f"Source {sid}: venue_grouping must be {{fields: [...], reason}}: {vg}")

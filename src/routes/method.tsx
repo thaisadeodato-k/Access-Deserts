@@ -29,14 +29,21 @@ const SECTIONS = [
       'Early-childhood education: partner crèches (type "CR.P.CONV") are included, as a separate subcategory (partner network).',
       'Libraries, museums, cultural spaces, theatres and cinemas: privately run venues are excluded ("private provider"). Theatres and cinemas are listed per room; rooms at the same address are one venue, and each venue is counted once.',
       'Parks: parks marked as proposed are excluded ("planned, not built").',
-      "Social assistance: CRAS locations are the CRAS class of the social assistance facilities layer. The layer named after CRAS holds coverage areas, not locations, and is not used.",
+      "Social assistance: CRAS locations are the CRAS class of the social assistance facilities layer. The layer named after CRAS holds coverage areas, not locations, and is not counted. Because the facilities layer has no unit-name field, a CRAS takes the name of the coverage area that contains it, only when exactly one CRAS lies in exactly one area; these names are marked as derived, and the others stay unnamed.",
+      "Records outside the municipal boundary (mostly train stations and intercity bus terminals near the border) are kept and counted, and flagged as outside the boundary.",
       'Bus terminals: intercity ("RODOVIARIO") terminals are excluded ("intercity terminal, not daily access"). Bus corridors are shown for context only, and only those in operation.',
       "City boundary: the union of the 96 municipal districts, checked on every run against the São Paulo municipality polygon of the GeoSampa context layer.",
       "[TO BE COMPLETED: counts per rule from quality.json]",
     ],
   },
   { title: "Parameters", body: ["[TO BE COMPLETED: filled automatically from run.json]"] },
-  { title: "Limitations", body: ["[TO BE COMPLETED]"] },
+  {
+    title: "Limitations",
+    body: [
+      "Edge effect: GeoSampa only covers services inside São Paulo. Areas near the municipal border may appear less served than they are, because nearby services in neighbouring municipalities are missing. The few records outside the boundary that GeoSampa does include (mainly train stations and bus terminals) are kept.",
+      "[TO BE COMPLETED]",
+    ],
+  },
   { title: "Tools", body: ["[TO BE COMPLETED]"] },
 ];
 

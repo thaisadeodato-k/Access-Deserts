@@ -135,10 +135,12 @@ RULES = [
 
 def test_normalise_without_field_map_keeps_every_record():
     out = norm([feat(0), feat(1, coords=None)], SOURCE)
-    assert out[0]["properties"] == {"id": "s1:test.0", "source_id": "s1", "name": None, "category": "health_ubs",
+    assert out[0]["properties"] == {"id": "s1:test.0", "source_id": "s1", "name": None, "name_derived": False,
+                                    "category": "health_ubs",
                                     "subcategory": None, "geometry_type": "Point", "address": None,
                                     "equipment_type": None, "administrative_sphere": None,
-                                    "included_in_metrics": True, "exclusion_reason": None, "override_reason": None}
+                                    "included_in_metrics": True, "exclusion_reason": None, "override_reason": None,
+                                    "outside_boundary": None}
     assert out[1]["geometry"] is None
     assert out[1]["properties"]["included_in_metrics"] is False
     assert out[1]["properties"]["exclusion_reason"] == "missing coordinates"
@@ -271,7 +273,8 @@ def test_repo_config_is_valid():
     approved = cfg.approved_sources(city, cfg.load_sources())
     layers = {s["layer"] for s in approved}
     assert "geoportal:equipamento_saude_ubs_posto_centro" in layers and "geoportal:ponto_onibus" in layers
-    assert "geoportal:centro_referencia_assistencia_social" not in layers  # coverage areas, not locations
+    roles = {s["layer"]: s["role"] for s in approved}
+    assert roles["geoportal:centro_referencia_assistencia_social"] == "reference"  # coverage areas, never a service
     assert "geoportal:pde_transporte_estacao_terminal" not in layers       # rejected 2026-10-05
 
 
@@ -440,3 +443,40 @@ def test_end_to_end_with_context_reference_and_boundary(tmp_path):
     assert q["m"]["record_filter"] == {"field": "code", "equals": 27, "records_in_layer": 2, "records_kept": 1}
     ctx = json.loads((d / "context" / "d.geojson").read_text(encoding="utf-8"))
     assert [f["properties"]["name"] for f in ctx["features"]] == ["A", "B"]
+
+
+# ---- Phase 4 closing: placeholders, derived names, outside flag -----------------------------
+
+def test_placeholder_values_become_null():
+    from pipeline.access_deserts.normalise import clean_placeholders
+    src = {**SOURCE, "placeholder_values": {"bairro": ["No"]}}
+    out, counts = clean_placeholders([feat(0, bairro="No"), feat(1, bairro="Centro"), feat(2, other="No")], src)
+    assert [f["properties"].get("bairro") for f in out] == [None, "Centro", None]
+    assert out[2]["properties"]["other"] == "No" and counts == {"bairro": 1}
+
+
+def test_derived_names_only_for_one_to_one_matches():
+    from pipeline.access_deserts import boundary as bnd
+    from pipeline.access_deserts.derive import derive_names
+    proj = bnd.Projector("EPSG:31983")
+    areas = [square(-46.70, -23.60, nm="Area A"), square(-46.68, -23.60, nm="Area B"), square(-46.66, -23.60, nm="Area C")]
+    pt = lambda i, x: {"type": "Feature", "geometry": {"type": "Point", "coordinates": [x, -23.595]},  # noqa: E731
+                       "properties": {"id": f"s1:{i}", "source_id": "s1", "name": None, "name_derived": False}}
+    services = [pt(0, -46.695), pt(1, -46.675), pt(2, -46.674), pt(3, -46.60)]  # A: 1 point, B: 2 points, none: 1
+    summary = derive_names(services, areas, {"from_source": "cov", "field": "nm"}, proj)
+    assert [s["properties"]["name"] for s in services] == ["Area A", None, None, None]
+    assert services[0]["properties"]["name_derived"] is True and services[1]["properties"]["name_derived"] is False
+    assert (summary["in_exactly_one_area"], summary["in_no_area"], summary["names_assigned"]) == (3, 1, 1)
+    assert summary["areas_without_record"] == ["Area C"]
+    assert summary["areas_with_several_records"] == [{"area": "Area B", "records": 2}]
+
+
+def test_outside_boundary_flag_is_set_on_records():
+    from pipeline.access_deserts import boundary as bnd
+    proj = bnd.Projector("EPSG:31983")
+    b = bnd.union_boundary([square(-46.70, -23.60)], proj)
+    services = [{"geometry": {"type": "Point", "coordinates": c}, "properties": {"id": str(i), "source_id": "s1"}}
+                for i, c in enumerate([[-46.695, -23.595], [-46.5, -23.5]])]
+    services.append({"geometry": None, "properties": {"id": "x", "source_id": "s1"}})
+    bnd.outside_records(services, b, proj)
+    assert [s["properties"]["outside_boundary"] for s in services] == [False, True, None]

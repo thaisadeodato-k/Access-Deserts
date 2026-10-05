@@ -74,6 +74,8 @@ export type ServiceProperties = {
   id: string;
   source_id: string;
   name: string | null;
+  /** True when the name comes from another layer (e.g. CRAS coverage area), not the source. */
+  name_derived?: boolean;
   category: string | null;
   subcategory: string | null;
   geometry_type: string | null;
@@ -84,6 +86,8 @@ export type ServiceProperties = {
   exclusion_reason: string | null;
   override_reason: string | null;
   venue_id?: string | null;
+  /** Outside the municipal boundary (still counted); null without geometry. */
+  outside_boundary?: boolean | null;
 };
 
 export type ServiceFeature = {

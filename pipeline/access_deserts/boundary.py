@@ -51,16 +51,22 @@ def consistency_check(boundary, reference_features: list[dict], proj: Projector,
 
 
 def outside_records(services: list[dict], boundary, proj: Projector) -> dict[str, dict]:
-    """Per source: records with geometry, how many fall outside the boundary, and a few of them."""
+    """Per source: records with geometry, how many fall outside the boundary, and a few of them.
+
+    Also sets `outside_boundary` (true/false; null without geometry) on every record. Records
+    outside stay in the metrics (author decision 2026-10-05: dropping them would create
+    artificial deserts at the city edge)."""
     inside = prep(boundary)
     out: dict[str, dict] = {}
     for s in services:
         p, g = s["properties"], s.get("geometry")
         rec = out.setdefault(p["source_id"], {"with_geometry": 0, "outside": 0, "examples": []})
         if not g:
+            p["outside_boundary"] = None
             continue
         rec["with_geometry"] += 1
-        if not inside.intersects(proj.to_native(g)):
+        p["outside_boundary"] = not inside.intersects(proj.to_native(g))
+        if p["outside_boundary"]:
             rec["outside"] += 1
             if len(rec["examples"]) < MAX_LISTED_OUTSIDE:
                 rec["examples"].append({"id": p["id"], "name": p.get("name")})

@@ -38,6 +38,11 @@
 #              rule result for ONE record (record id: id_field value, else WFS feature id). Only added
 #              after the author approves it, with the evidence cited. Reported in quality.json
 #              (inclusion.overrides) and on the Method page. Cannot include a record without coordinates.
+#   placeholder_values: {field: [values]} replaced by null before normalising and profiling. Only
+#              for fields where the value is clearly a placeholder, never in yes/no fields.
+#   derived_name: {from_source, field}. When the source has no name field, the record takes the
+#              name of the area (from another approved source) that contains it, only for one-to-one
+#              matches; flagged name_derived: true; counts and method in quality.json.
 #   map_initially_hidden: true for heavy layers (file loaded by the map only when switched on).
 #   highlight_fields: {attribute: label}. The attribute's empty share is reported as a
 #              highlighted finding in quality.json (computed each run).
@@ -152,6 +157,15 @@ sources:
     field_map:
       address: [tx_endereco_equipamento, cd_cep_equipamento]
       type: nm_classe_equipamento
+    placeholder_values:   # "No" in 100% of records; none is a yes/no field (approved 2026-10-05)
+      cd_equipamento: ["No"]
+      nm_bairro_equipamento: ["No"]
+      tx_horario_funcionamento: ["No"]
+      tx_numero_telefone: ["No"]
+      cd_equipamento_base_origem: ["No"]
+    derived_name:         # approved 2026-10-05; 5 Oct data: 50 of 54 named (1:1 matches only)
+      from_source: sp_geosampa_cras_coverage
+      field: nm_cras
 
   - source_id: sp_geosampa_parque_municipal
     name: Municipal parks
@@ -373,13 +387,14 @@ sources:
   - source_id: sp_geosampa_cras_coverage
     name: CRAS coverage areas (not facility locations)
     layer: geoportal:centro_referencia_assistencia_social
-    role: context
+    role: reference
     category: null
     subcategory: null
     features_at_verification: 58
+    approved: true   # 2026-10-05, only as the source of derived CRAS names (not published, not counted)
     notes: >-
       58 polygons of CRAS coverage areas (qt_area_abrangencia_centro), not service locations
-      (inventory 2026-10-05). Was configured as the CRAS service source until then. Not approved.
+      (inventory 2026-10-05). Was configured as the CRAS service source until then.
 
   # ---- Demand --------------------------------------------------------------------------------
   - source_id: sp_geosampa_densidade_demografica

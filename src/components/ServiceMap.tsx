@@ -50,6 +50,8 @@ function popupContent(p: ServiceProperties, sourceName: string): HTMLElement {
     el.appendChild(n);
   };
   add(p.name ?? "(no name in source)", "font-semibold text-sm");
+  if (p.name_derived)
+    add("Name derived from the containing coverage area", "italic text-muted-foreground");
   add(
     sourceName + (p.subcategory ? ` · ${SUBCATEGORY_LABEL[p.subcategory] ?? p.subcategory}` : ""),
     "text-muted-foreground",
@@ -64,6 +66,7 @@ function popupContent(p: ServiceProperties, sourceName: string): HTMLElement {
     p.included_in_metrics ? "" : "font-medium",
   );
   if (p.override_reason) add(`Decided by an approved record override: ${p.override_reason}`);
+  if (p.outside_boundary) add("Outside the municipal boundary (still counted)");
   add(p.id, "font-mono text-[10px] text-muted-foreground break-all");
   return el;
 }

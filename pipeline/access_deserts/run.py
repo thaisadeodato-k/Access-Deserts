@@ -26,7 +26,8 @@ from . import boundary as bnd
 from . import config as cfg
 from .adapters import wfs
 from .crs import ensure_lonlat
-from .normalise import feature_key, mapped_value, normalise_services
+from .derive import derive_names
+from .normalise import clean_placeholders, feature_key, mapped_value, normalise_services
 from .output import create_run_dir, new_run_id, now_iso, previous_feature_ids, update_index, write_json
 from .quality import layer_check, source_quality
 
@@ -97,6 +98,7 @@ def _process_source(session, source, city, params, raw_root, caps, runs_dir):
     if filter_info is not None:
         filter_info["records_kept"] = len(res["features"])
     features, crs_record = ensure_lonlat(res["features"], city["wgs84_envelope"], city["native_crs"], res["declared_crs"])
+    features, placeholders = clean_placeholders(features, source)
     layer_info = layer_check(source["layer"], _type_name_queried(res["pages"]), layers)
 
     if source["role"] == "service":
@@ -121,6 +123,8 @@ def _process_source(session, source, city, params, raw_root, caps, runs_dir):
         venue_grouping=venues,
         record_filter=filter_info,
     )
+    if source.get("placeholder_values"):
+        quality["placeholder_values"] = {"values": source["placeholder_values"], "replaced_by_null": placeholders}
     n, matched = len(res["features"]), res["number_matched"]
     count_error = (f"Count mismatch: server reported {matched}, received {n}"
                    if matched is not None and matched != n else None)
@@ -142,6 +146,8 @@ def _process_source(session, source, city, params, raw_root, caps, runs_dir):
         "subcategory_rules": source.get("subcategory_rules"),
         "venue_grouping": source.get("venue_grouping"),
         "record_overrides": source.get("record_overrides") or [],
+        "placeholder_values": source.get("placeholder_values"),
+        "derived_name": source.get("derived_name"),
         "highlight_fields": source.get("highlight_fields"),
         "fetched_at": fetched_at,
         "number_matched_reported": matched,
@@ -215,6 +221,20 @@ def run(city_code: str, data_dir: Path, cache_dir: Path, config_dir: Path = cfg.
               + (f"; included in metrics {inc}" if inc is not None else "") + f"; CRS: {record['crs']['action']}", flush=True)
 
     proj = bnd.Projector(city["native_crs"])
+    by_quality = {q["source_id"]: q for q in qualities}
+    by_record = {r["source_id"]: r for r in records}
+    for source in sources:
+        conf = source.get("derived_name")
+        if not conf or source["source_id"] not in by_quality:
+            continue
+        own = [s for s in all_services if s["properties"]["source_id"] == source["source_id"]]
+        if conf["from_source"] not in by_source:
+            summary = {"error": f"Source {conf['from_source']} not available in this run; names left null."}
+            errors.append({"source_id": source["source_id"], "error": summary["error"]})
+        else:
+            summary = derive_names(own, by_source[conf["from_source"]], conf, proj)
+        by_quality[source["source_id"]]["name_derivation"] = summary
+        by_record[source["source_id"]]["name_derivation"] = summary
     try:
         boundary_geom, boundary_record = _boundary(city, by_source, proj)
     except Exception as e:
