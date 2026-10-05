@@ -28,8 +28,8 @@ The project was scaffolded in Lovable as TanStack Start (React 19 + Vite + TypeS
   - Only libraries actually used are in `pipeline/requirements.txt` (pinned); geopandas/shapely/pandas/h3 are added in the phase that first needs them.
   - Run locally (Windows): `py -3.13 -m venv .venv-pipeline`, `.venv-pipeline\Scripts\pip install -r pipeline\requirements.txt`, `.venv-pipeline\Scripts\python -m pipeline.access_deserts.run --city sp` (use `--data-dir`/`--cache-dir` to write outside the repo for test runs).
 - **Source configuration** in `/pipeline/config/sources.yaml` (versioned, reviewable): source_id, city_code, name, publisher, layer, endpoint_url, protocol (`wfs` | `csv` | `geojson` | `overpass` | `api`), type_name/query, category, subcategory, approved (true/false). Only approved sources are used.
-- **Frontend** reads only files under `public/data/`. It never calls external data sources.
-- **Snapshots:** a run marked `snapshot: true` in `index.json` is served at `/snapshot/{date}` and must never change. This is the link submitted with the application. The live route `/` shows the latest run with the label "Live data – last updated {date}".
+- **Frontend** reads only files under `public/data/`. It never calls external data sources (the CARTO basemap tiles are the only external request). Run files are read by `src/lib/runs.ts`; the map is `src/components/ServiceMap.tsx` (MapLibre, browser only) inside `src/components/RunView.tsx`, shared by `/` and `/snapshot/$date`. maplibre-gl 6 needs its worker passed explicitly (`?worker&url` import + `setWorkerUrl`), otherwise it fails under Vite.
+- **Snapshots:** a run marked `snapshot: true` in `index.json` is served at `/snapshot/{date}` and must never change. `{date}` is the date prefix of the run_id; at most one snapshot per date (two are shown as a data error, never guessed). The snapshot's data files are fixed, but its appearance follows the current frontend code (no frozen build yet). This is the link submitted with the application. The live route `/` shows the latest run with the label "Live data – last updated {date}".
 - If something from the Lovable scaffold (database tables, admin area, edge functions) becomes redundant with this architecture, list it and ask before removing.
 
 ### To retire later
@@ -37,7 +37,6 @@ Kept working for now, but new code must not depend on them. Retire only after th
 - Lovable Cloud tables `cities`, `sources`, `discovered_layers`, `runs`, `run_logs` and their migration `drizzle/migrations/0000_migration.sql` (replaced by `pipeline/config/*.yaml`, `run.json`, `runs/index.json`).
 - `/admin` route (`src/routes/admin.tsx`) and `src/lib/admin.functions.ts` (GetCapabilities discovery: port its logic to a Python pipeline step). Removed from public navigation on 2026-10-05; the route still works by URL.
 - `src/integrations/supabase/*`, `supabase/config.toml`, `drizzle.config.ts`, `drizzle/schema.ts`, and the `@supabase/supabase-js`, `drizzle-orm`, `drizzle-kit`, `postgres` dependencies.
-- The Supabase query on the Map page (`src/routes/index.tsx`, source counts).
 - Cloud secret `ADMIN_KEY` and the Supabase variables in `.env`.
 
 ## Output data model (per run)
