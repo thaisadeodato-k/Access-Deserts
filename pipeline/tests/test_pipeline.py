@@ -1,5 +1,6 @@
 """Offline tests: no network. A fake session serves canned WFS responses."""
 import json
+import re
 from urllib.parse import parse_qs, urlparse
 
 import pytest
@@ -9,6 +10,10 @@ from pipeline.access_deserts import config as cfg
 from pipeline.access_deserts.adapters import wfs
 from pipeline.access_deserts.crs import ensure_lonlat
 from pipeline.access_deserts.normalise import normalise_services
+
+
+def norm(features, source):
+    return normalise_services(features, source)[0]
 from pipeline.access_deserts.output import create_run_dir, read_index, update_index
 from pipeline.access_deserts.quality import layer_check, source_quality
 from pipeline.access_deserts.run import run
@@ -20,7 +25,10 @@ SOURCE = {"source_id": "s1", "name": "Test", "publisher": "P", "layer": "geoport
 
 CAPS = b"""<?xml version="1.0"?><wfs:WFS_Capabilities xmlns:wfs="http://www.opengis.net/wfs/2.0" xmlns:xlink="http://www.w3.org/1999/xlink">
 <wfs:FeatureTypeList><FeatureType xmlns="http://www.opengis.net/wfs/2.0" xmlns:geoportal="http://geoportal.prodam"><Name>geoportal:test</Name><Title>T</Title>
-<MetadataURL xlink:href="http://metadados.geosampa.prodam/x?uuid=1"/></FeatureType></wfs:FeatureTypeList></wfs:WFS_Capabilities>"""
+<MetadataURL xlink:href="http://metadados.geosampa.prodam/x?uuid=1"/></FeatureType>
+<FeatureType xmlns="http://www.opengis.net/wfs/2.0"><Name>geoportal:districts</Name><Title>D</Title></FeatureType>
+<FeatureType xmlns="http://www.opengis.net/wfs/2.0"><Name>geoportal:municipalities</Name><Title>M</Title></FeatureType>
+</wfs:FeatureTypeList></wfs:WFS_Capabilities>"""
 
 
 def feat(i, coords=(-46.6, -23.5), **props):
@@ -35,18 +43,28 @@ class FakeResponse:
 
 
 class FakeSession:
-    """Serves GetCapabilities and pages of `features` according to COUNT/STARTINDEX."""
-    def __init__(self, features, crs="urn:ogc:def:crs:EPSG::4326"):
-        self.features, self.crs, self.requests = features, crs, []
+    """Serves GetCapabilities, hit counts and pages of `features` according to COUNT/STARTINDEX.
+
+    `layers` maps other layer names to their features; an OGC FILTER {field = literal} is applied.
+    """
+    def __init__(self, features, crs="urn:ogc:def:crs:EPSG::4326", layers=None):
+        self.features, self.crs, self.requests, self.layers = features, crs, [], layers or {}
 
     def get(self, url, timeout):
         self.requests.append(url)
         q = {k: v[0] for k, v in parse_qs(urlparse(url).query).items()}
         if q["REQUEST"] == "GetCapabilities":
             return FakeResponse(url, CAPS)
+        feats = self.layers.get(q.get("TYPENAMES"), self.features)
+        if q.get("RESULTTYPE") == "hits":
+            return FakeResponse(url, f'<wfs:FeatureCollection numberMatched="{len(feats)}"/>'.encode())
+        if "FILTER" in q:
+            field = re.search(r"<fes:ValueReference>(.*?)</", q["FILTER"]).group(1)
+            value = re.search(r"<fes:Literal>(.*?)</", q["FILTER"]).group(1)
+            feats = [f for f in feats if str(f["properties"].get(field)) == value]
         start, count = int(q["STARTINDEX"]), int(q["COUNT"])
-        page = self.features[start:start + count]
-        body = {"type": "FeatureCollection", "numberMatched": len(self.features), "features": page,
+        page = feats[start:start + count]
+        body = {"type": "FeatureCollection", "numberMatched": len(feats), "features": page,
                 "crs": {"type": "name", "properties": {"name": self.crs}}}
         return FakeResponse(url, json.dumps(body).encode())
 
@@ -116,7 +134,7 @@ RULES = [
 
 
 def test_normalise_without_field_map_keeps_every_record():
-    out = normalise_services([feat(0), feat(1, coords=None)], SOURCE)
+    out = norm([feat(0), feat(1, coords=None)], SOURCE)
     assert out[0]["properties"] == {"id": "s1:test.0", "source_id": "s1", "name": None, "category": "health_ubs",
                                     "subcategory": None, "geometry_type": "Point", "address": None,
                                     "equipment_type": None, "administrative_sphere": None,
@@ -130,7 +148,7 @@ def test_inclusion_rules():
     src = {**SOURCE, "inclusion_rules": RULES}
     fs = [feat(0, esfera="Municipal"), feat(1, esfera="Estadual"), feat(2, esfera="Privado"),
           feat(3, tipo="SEM TIPO"), feat(4, esfera="Privado", tipo="SEM TIPO")]
-    p = [f["properties"] for f in normalise_services(fs, src)]
+    p = [f["properties"] for f in norm(fs, src)]
     assert [x["included_in_metrics"] for x in p] == [True, True, False, False, False]
     assert p[2]["exclusion_reason"] == "private provider"
     assert p[4]["exclusion_reason"] == "private provider; missing type, needs review"
@@ -155,7 +173,7 @@ def test_highlighted_finding():
 
 def test_normalise_with_field_map():
     src = {**SOURCE, "field_map": {"name": "nm", "address": ["addr", "missing"], "type": "tipo", "sphere": "esfera"}}
-    p = normalise_services([feat(0, tipo="UBS", esfera="Municipal")], src)[0]["properties"]
+    p = norm([feat(0, tipo="UBS", esfera="Municipal")], src)[0]["properties"]
     assert p["name"] == "Unit 0" and p["address"] == "Rua X"
     assert (p["equipment_type"], p["administrative_sphere"]) == ("UBS", "Municipal")
 
@@ -174,7 +192,7 @@ def test_record_override_includes_one_record_and_is_reported():
     src = {**SOURCE, "inclusion_rules": RULES, "field_map": {"name": "nm", "sphere": "esfera"},
            "record_overrides": [OVERRIDE, {**OVERRIDE, "feature_id": "test.99"}]}
     fs = [feat(0), feat(3, tipo="SEM TIPO", esfera="Estadual")]
-    p = [f["properties"] for f in normalise_services(fs, src)]
+    p = [f["properties"] for f in norm(fs, src)]
     assert p[1]["included_in_metrics"] is True and p[1]["exclusion_reason"] is None
     assert p[1]["override_reason"] == "state health centre (verified)" and p[0]["override_reason"] is None
     inc = source_quality(src, fs, set(), "t", [], r"\.prodam$", 0.2, None)["inclusion"]
@@ -186,7 +204,7 @@ def test_record_override_includes_one_record_and_is_reported():
 
 def test_override_cannot_include_a_record_without_coordinates():
     src = {**SOURCE, "record_overrides": [OVERRIDE]}
-    p = normalise_services([feat(3, coords=None)], src)[0]["properties"]
+    p = norm([feat(3, coords=None)], src)[0]["properties"]
     assert p["included_in_metrics"] is False and p["exclusion_reason"] == "missing coordinates"
     assert p["override_reason"] is None
 
@@ -251,7 +269,10 @@ def test_index_latest_only_for_completed(tmp_path):
 def test_repo_config_is_valid():
     city = cfg.load_city("sp")
     approved = cfg.approved_sources(city, cfg.load_sources())
-    assert [s["layer"] for s in approved] == ["geoportal:equipamento_saude_ubs_posto_centro"]
+    layers = {s["layer"] for s in approved}
+    assert "geoportal:equipamento_saude_ubs_posto_centro" in layers and "geoportal:ponto_onibus" in layers
+    assert "geoportal:centro_referencia_assistencia_social" not in layers  # coverage areas, not locations
+    assert "geoportal:pde_transporte_estacao_terminal" not in layers       # rejected 2026-10-05
 
 
 def test_disallowed_host_is_refused():
@@ -300,3 +321,108 @@ def test_inventory_field_profile():
     p = {x["field"]: x for x in field_profile(fs, [{"name": "tipo", "type": "xsd:string"}, {"name": "g", "type": "gml:Point"}])}
     assert list(p) == ["tipo"]
     assert p["tipo"]["pct_empty"] == 33.33 and p["tipo"]["values"] == [{"value": "A", "count": 2}]
+
+
+# ---- Phase 4 options -----------------------------------------------------------------------
+
+def test_id_field_gives_stable_record_ids():
+    src = {**SOURCE, "id_field": "code"}
+    p = norm([{**feat(0, code=77), "id": "test.fid--abc"}], src)[0]["properties"]
+    assert p["id"] == "s1:77"
+
+
+def test_subcategory_rules():
+    src = {**SOURCE, "subcategory": "early_childhood",
+           "subcategory_rules": [{"field": "tipo", "equals": "CR.P.CONV", "subcategory": "partner_network"}]}
+    p = [f["properties"]["subcategory"] for f in norm([feat(0, tipo="EMEI"), feat(1, tipo="CR.P.CONV")], src)]
+    assert p == ["early_childhood", "partner_network"]
+
+
+def test_venue_grouping_counts_one_record_per_venue():
+    src = {**SOURCE, "inclusion_rules": RULES,
+           "venue_grouping": {"fields": ["addr"], "reason": "another room of the same venue (venue counted once)"}}
+    fs = [feat(0, addr="Av. X,, 10"), feat(1, addr="av x 10"), feat(2, addr="Rua Y, 5"),
+          feat(3, addr="Rua Z, 1", esfera="Privado"), feat(4, addr="Rua Z 1", esfera="Privado")]
+    out, summary = normalise_services(fs, src)
+    p = [f["properties"] for f in out]
+    assert [x["included_in_metrics"] for x in p] == [True, False, True, False, False]
+    assert p[1]["exclusion_reason"].startswith("another room") and p[4]["exclusion_reason"] == "private provider"
+    assert p[0]["venue_id"] == p[1]["venue_id"] != p[2]["venue_id"]
+    assert (summary["records"], summary["venues"], summary["records_excluded_as_same_venue"]) == (5, 3, 1)
+    inc = source_quality(src, fs, set(), "t", [], r"\.prodam$", 0.2, None, services=out, venue_grouping=summary)["inclusion"]
+    assert inc["included_in_metrics"] == 2
+    assert inc["excluded_by_reason"] == {"private provider": 2, "another room of the same venue (venue counted once)": 1}
+
+
+def test_record_filter_and_page_size_are_sent(tmp_path):
+    s = FakeSession([feat(0, kind="A"), feat(1, kind="B"), feat(2, kind="A")])
+    res = wfs.fetch_layer(s, {**SOURCE, "record_filter": {"field": "kind", "equals": "A"}, "page_size": 50},
+                          tmp_path, WFS_PARAMS)
+    assert len(res["features"]) == 2 and res["number_matched"] == 2
+    q = parse_qs(urlparse(s.requests[0]).query)
+    assert q["COUNT"] == ["50"] and "<fes:Literal>A</fes:Literal>" in q["FILTER"][0]
+    assert wfs.count_hits(s, SOURCE["endpoint_url"], SOURCE["layer"], tmp_path, WFS_PARAMS)[1] == 3
+
+
+def test_bad_options_are_rejected(tmp_path):
+    for bad in ({"page_size": 0}, {"record_filter": {"field": "x"}}, {"venue_grouping": {"fields": []}},
+                {"subcategory_rules": [{"field": "x"}]}, {"role": "other"}):
+        (tmp_path / "sources.yaml").write_text(yaml.safe_dump({"sources": [{**SOURCE, **bad}]}))
+        with pytest.raises(ValueError):
+            cfg.load_sources(tmp_path)
+
+
+def square(x0, y0, d=0.01, **props):
+    ring = [[x0, y0], [x0 + d, y0], [x0 + d, y0 + d], [x0, y0 + d], [x0, y0]]
+    return {"type": "Feature", "id": f"p.{x0}", "geometry": {"type": "Polygon", "coordinates": [ring]}, "properties": props}
+
+
+def test_boundary_union_check_and_outside():
+    from pipeline.access_deserts import boundary as bnd
+    proj = bnd.Projector("EPSG:31983")
+    districts = [square(-46.70, -23.60), square(-46.69, -23.60)]
+    b = bnd.union_boundary(districts, proj)
+    check = bnd.consistency_check(b, [square(-46.70, -23.60, d=0.02)], proj, "ref")
+    assert check["reference_area_km2"] > check["boundary_area_km2"] > 0
+    assert check["symmetric_difference_km2"] == pytest.approx(-check["area_difference_km2"], rel=1e-6)
+    services = [{"type": "Feature", "geometry": {"type": "Point", "coordinates": [-46.695, -23.595]},
+                 "properties": {"id": "s1:a", "source_id": "s1", "name": "in"}},
+                {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-46.60, -23.50]},
+                 "properties": {"id": "s1:b", "source_id": "s1", "name": "out"}},
+                {"type": "Feature", "geometry": None, "properties": {"id": "s1:c", "source_id": "s1", "name": "none"}}]
+    o = bnd.outside_records(services, b, proj)["s1"]
+    assert (o["with_geometry"], o["outside"], o["pct_outside"]) == (2, 1, 50.0)
+    assert o["examples"] == [{"id": "s1:b", "name": "out"}]
+
+
+def test_end_to_end_with_context_reference_and_boundary(tmp_path):
+    conf = tmp_path / "config"
+    conf.mkdir()
+    (conf / "params.yaml").write_text((cfg.CONFIG_DIR / "params.yaml").read_text(encoding="utf-8"), encoding="utf-8")
+    city = yaml.safe_load((cfg.CONFIG_DIR / "cities.yaml").read_text(encoding="utf-8"))
+    city["sp"]["allowed_hosts"] = ["wfs.example"]
+    city["sp"]["boundary"] = {"method": "union", "source_id": "d", "check_against": "m"}
+    (conf / "cities.yaml").write_text(yaml.safe_dump(city, allow_unicode=True), encoding="utf-8")
+    base = {k: SOURCE[k] for k in ("name", "publisher", "endpoint_url", "protocol", "approved", "city_code")}
+    sources = [SOURCE,
+               {**base, "source_id": "d", "layer": "geoportal:districts", "role": "context", "field_map": {"name": "nm"}},
+               {**base, "source_id": "m", "layer": "geoportal:municipalities", "role": "reference",
+                "record_filter": {"field": "code", "equals": 27}}]
+    (conf / "sources.yaml").write_text(yaml.safe_dump({"sources": sources}), encoding="utf-8")
+    layers = {"geoportal:districts": [square(-46.70, -23.60, nm="A"), square(-46.69, -23.60, nm="B")],
+              "geoportal:municipalities": [square(-46.70, -23.60, d=0.02, code=27), square(-46.0, -23.0, code=28)]}
+    pts = [feat(0, coords=(-46.695, -23.595)), feat(1, coords=(-46.60, -23.50))]
+    data = tmp_path / "data"
+    rid, st = run("sp", data, tmp_path / "cache", conf, session=FakeSession(pts, layers=layers))
+    assert st == "completed"
+    d = data / "runs" / rid
+    r = json.loads((d / "run.json").read_text(encoding="utf-8"))
+    assert r["boundary"]["features_unioned"] == 2
+    assert r["boundary"]["consistency_check"]["reference_features"] == 1
+    assert {"boundary.geojson", "context/d.geojson"} <= set(r["outputs"])
+    assert not (d / "context" / "m.geojson").exists()
+    q = {s["source_id"]: s for s in json.loads((d / "quality.json").read_text(encoding="utf-8"))["sources"]}
+    assert q["s1"]["pct_outside_city_boundary"] == 50.0
+    assert q["m"]["record_filter"] == {"field": "code", "equals": 27, "records_in_layer": 2, "records_kept": 1}
+    ctx = json.loads((d / "context" / "d.geojson").read_text(encoding="utf-8"))
+    assert [f["properties"]["name"] for f in ctx["features"]] == ["A", "B"]

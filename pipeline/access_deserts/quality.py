@@ -6,6 +6,7 @@ so the file shape is stable across phases.
 from __future__ import annotations
 
 import re
+from collections import Counter
 from urllib.parse import urlparse
 
 from .adapters.wfs import urls_in
@@ -17,6 +18,7 @@ from .normalise import (
     matching_rules,
     override_applies,
     overrides_by_feature,
+    record_key,
     rule_reasons,
 )
 
@@ -51,15 +53,25 @@ def internal_hosts(urls: list[str], pattern: str) -> list[str]:
     return sorted({h for h in (urlparse(u).hostname for u in urls) if h and rx.search(h)})
 
 
-def inclusion_summary(features: list[dict], rules: list[dict], overrides: dict[str, dict] | None = None) -> dict:
-    """Counts per inclusion rule (a record can match several), overrides, and included/excluded totals."""
-    overrides = overrides or {}
+def inclusion_summary(features: list[dict], source: dict, services: list[dict] | None = None) -> dict:
+    """Counts per inclusion rule (a record can match several), overrides, and included/excluded totals.
+
+    Totals and counts per exclusion reason come from the normalised records when given, so they
+    reflect every step (rules, overrides, venue grouping).
+    """
+    rules = source.get("inclusion_rules") or []
+    overrides = overrides_by_feature(source)
     matched = [0] * len(rules)
     for f in features:
         for i in matching_rules(f.get("properties") or {}, rules):
             matched[i] += 1
-    included = sum(inclusion(f, rules, overrides.get(f.get("id")))[0] for f in features)
-    by_id = {f.get("id"): f for f in features}
+    if services is None:
+        services = [{"properties": dict(zip(("included_in_metrics", "exclusion_reason"),
+                                            inclusion(f, rules, overrides.get(record_key(source, f)))))}
+                    for f in features]
+    included = sum(s["properties"]["included_in_metrics"] for s in services)
+    by_reason = Counter(s["properties"]["exclusion_reason"] for s in services if not s["properties"]["included_in_metrics"])
+    by_id = {record_key(source, f): f for f in features}
     override_report = []
     for fid, o in overrides.items():
         f = by_id.get(fid)
@@ -72,7 +84,8 @@ def inclusion_summary(features: list[dict], rules: list[dict], overrides: dict[s
         })
     return {
         "included_in_metrics": included,
-        "excluded_from_metrics": len(features) - included,
+        "excluded_from_metrics": len(services) - included,
+        "excluded_by_reason": dict(by_reason.most_common()),
         "rules": [{**r, "matched": matched[i]} for i, r in enumerate(rules)]
                  + [{"field": "geometry", "equals": None, "include": False, "reason": MISSING_COORDINATES,
                      "matched": sum(not has_coords(f) for f in features), "built_in": True}],
@@ -80,10 +93,11 @@ def inclusion_summary(features: list[dict], rules: list[dict], overrides: dict[s
     }
 
 
-def _record(f: dict, field_map: dict) -> dict:
+def _record(f: dict, source: dict) -> dict:
     props = f.get("properties") or {}
+    field_map = source.get("field_map") or {}
     return {
-        "feature_id": f.get("id"),
+        "feature_id": record_key(source, f),
         "name": mapped_value(props, field_map.get("name")),
         "equipment_type": mapped_value(props, field_map.get("type")),
         "administrative_sphere": mapped_value(props, field_map.get("sphere")),
@@ -97,13 +111,15 @@ def _names(records: list[dict]) -> str:
     )
 
 
-def rule_findings(features: list[dict], rules: list[dict], field_map: dict, overrides: dict[str, dict]) -> list[dict]:
+def rule_findings(features: list[dict], source: dict) -> list[dict]:
     """Findings about what the inclusion rules did in this run.
 
     - exclusion rules matching few records list those records, so they can be reviewed;
     - inclusion rules whose records are still excluded by another rule are reported, because
       the include rule then has no effect on them.
     """
+    rules = source.get("inclusion_rules") or []
+    overrides = overrides_by_feature(source)
     out = []
     for i, r in enumerate(rules):
         hits = [f for f in features if i in matching_rules(f.get("properties") or {}, rules)]
@@ -111,16 +127,16 @@ def rule_findings(features: list[dict], rules: list[dict], field_map: dict, over
             continue
         cond = f"{r['field']} = {r['equals']}"
         if not r["include"] and len(hits) <= MAX_LISTED_RECORDS:
-            records = [_record(f, field_map) for f in hits]
+            records = [_record(f, source) for f in hits]
             out.append({
                 "kind": "rule_matches", "highlight": False, "rule_reason": r["reason"], "count": len(hits),
                 "records": records,
                 "text": f'{len(hits)} record(s) match the exclusion rule "{r["reason"]}" ({cond}): {_names(records)}.',
             })
         if r["include"]:
-            still_excluded = [f for f in hits if not inclusion(f, rules, overrides.get(f.get("id")))[0]]
+            still_excluded = [f for f in hits if not inclusion(f, rules, overrides.get(record_key(source, f)))[0]]
             if still_excluded:
-                records = [_record(f, field_map) for f in still_excluded][:MAX_LISTED_RECORDS]
+                records = [_record(f, source) for f in still_excluded][:MAX_LISTED_RECORDS]
                 out.append({
                     "kind": "include_rule_without_effect", "highlight": False, "rule_reason": r["reason"],
                     "count": len(still_excluded), "records": records,
@@ -183,10 +199,11 @@ def source_quality(
     empty_threshold: float,
     previous_ids: set[str] | None,
     layer_info: dict | None = None,
+    services: list[dict] | None = None,
+    venue_grouping: dict | None = None,
+    record_filter: dict | None = None,
 ) -> dict:
     n = len(features)
-    rules = source.get("inclusion_rules") or []
-    overrides = overrides_by_feature(source)
     missing = sum(not has_coords(f) for f in features)
     profile = attribute_profile(features)
     data_urls = urls_in([f.get("properties") for f in features])
@@ -195,16 +212,21 @@ def source_quality(
         "name": source["name"],
         "publisher": source["publisher"],
         "layer": source["layer"],
+        "role": source.get("role"),
+        "category": source.get("category"),
         "layer_check": layer_info,
+        "record_filter": record_filter,
         "fetched_at": fetched_at,
         "record_count": n,
         "findings": highlighted_findings(profile, source.get("highlight_fields") or {})
-                    + rule_findings(features, rules, source.get("field_map") or {}, overrides),
-        "inclusion": inclusion_summary(features, rules, overrides),
+                    + rule_findings(features, source),
+        "inclusion": inclusion_summary(features, source, services),
+        "venue_grouping": venue_grouping,
         "change_vs_previous": change_vs_previous(current_ids, previous_ids),
         "pct_missing_coordinates": _pct(missing, n),
         "pct_outside_city_boundary": None,
-        "pct_outside_city_boundary_note": "Pending: city boundary not yet chosen (Phase 4).",
+        "pct_outside_city_boundary_note": "Not computed: no city boundary in this run.",
+        "outside_city_boundary": None,
         "duplicates_flagged": None,
         "pct_classified_by_ai": None,
         "fields_over_empty_threshold": {k: v for k, v in profile.items() if v is not None and v > 100 * empty_threshold},

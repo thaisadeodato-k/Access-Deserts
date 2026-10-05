@@ -19,9 +19,13 @@ def new_run_id(today: str | None = None) -> str:
 
 
 def write_json(path: Path, data) -> None:
+    """JSON with indentation (readable diffs); .geojson files compact, since they are large."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8", newline="\n") as f:
-        json.dump(data, f, ensure_ascii=False, indent=1)
+        if path.suffix == ".geojson":
+            json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+        else:
+            json.dump(data, f, ensure_ascii=False, indent=1)
         f.write("\n")
 
 

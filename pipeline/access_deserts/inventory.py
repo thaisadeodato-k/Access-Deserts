@@ -48,7 +48,8 @@ MAX_SINGLE_PAGE = 50000  # largest COUNT tried when the server cannot page a lay
 def load_candidates(config_dir: Path = cfg.CONFIG_DIR) -> list[dict]:
     with open(config_dir / "candidates.yaml", encoding="utf-8") as f:
         raw = yaml.safe_load(f)
-    return [{**raw.get("defaults", {}), **c, "kind": "candidate"} for c in raw["candidates"]]
+    return [{**raw.get("defaults", {}), **c, "kind": "candidate"} for c in raw["candidates"]
+            if c.get("status", "pending") == "pending"]
 
 
 def describe_feature_type(session, endpoint: str, layer: str, raw_dir: Path, wfs_params: dict) -> tuple[dict, list[dict]]:

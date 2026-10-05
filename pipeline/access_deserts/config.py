@@ -11,6 +11,28 @@ PROTOCOLS = {"wfs", "csv", "geojson", "overpass", "api"}
 REQUIRED_SOURCE_KEYS = ("source_id", "city_code", "name", "publisher", "layer", "endpoint_url", "protocol", "role", "approved")
 FIELD_MAP_KEYS = {"name", "address", "type", "sphere"}
 OVERRIDE_KEYS = {"feature_id", "include", "reason", "evidence", "approved_on"}
+# service: counted per category; context: published for display; reference: fetched for checks only
+ROLES = {"service", "context", "reference", "demand"}
+
+
+def _check_options(s: dict) -> None:
+    """Optional per-source keys added in Phase 4 (approved 2026-10-05)."""
+    sid = s["source_id"]
+    if s["role"] not in ROLES:
+        raise ValueError(f"Source {sid}: unknown role '{s['role']}'")
+    if "id_field" in s and not (isinstance(s["id_field"], str) and s["id_field"]):
+        raise ValueError(f"Source {sid}: id_field must be an attribute name")
+    if "page_size" in s and not (isinstance(s["page_size"], int) and s["page_size"] > 0):
+        raise ValueError(f"Source {sid}: page_size must be a positive integer")
+    rf = s.get("record_filter")
+    if rf is not None and (set(rf) != {"field", "equals"} or not rf["field"]):
+        raise ValueError(f"Source {sid}: record_filter must be {{field, equals}}: {rf}")
+    for r in s.get("subcategory_rules") or []:
+        if set(r) != {"field", "equals", "subcategory"}:
+            raise ValueError(f"Source {sid}: subcategory rule must have field, equals, subcategory: {r}")
+    vg = s.get("venue_grouping")
+    if vg is not None and (set(vg) != {"fields", "reason"} or not vg["fields"] or not vg["reason"]):
+        raise ValueError(f"Source {sid}: venue_grouping must be {{fields: [...], reason}}: {vg}")
 
 
 def _load(name: str, config_dir: Path) -> dict:
@@ -54,6 +76,7 @@ def load_sources(config_dir: Path = CONFIG_DIR) -> list[dict]:
             ids.append(o["feature_id"])
         if len(ids) != len(set(ids)):
             raise ValueError(f"Source {s['source_id']}: more than one override for the same feature_id")
+        _check_options(s)
         if s["source_id"] in seen:
             raise ValueError(f"Duplicate source_id '{s['source_id']}'")
         seen.add(s["source_id"])

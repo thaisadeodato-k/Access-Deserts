@@ -12,6 +12,7 @@ import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from urllib.parse import urlencode
+from xml.sax.saxutils import escape
 
 import requests
 
@@ -71,12 +72,37 @@ def get_capabilities(session, endpoint: str, raw_dir: Path, wfs_params: dict) ->
     return meta, layers
 
 
+def fes_filter(record_filter: dict | None) -> str | None:
+    """OGC Filter Encoding 2.0 for {field, equals}; sent as FILTER so the server returns only matches."""
+    if not record_filter:
+        return None
+    return (
+        '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:PropertyIsEqualTo>'
+        f"<fes:ValueReference>{escape(record_filter['field'])}</fes:ValueReference>"
+        f"<fes:Literal>{escape(str(record_filter['equals']))}</fes:Literal>"
+        "</fes:PropertyIsEqualTo></fes:Filter>"
+    )
+
+
+def count_hits(session, endpoint: str, layer: str, raw_dir: Path, wfs_params: dict) -> tuple[dict, int | None]:
+    """GetFeature RESULTTYPE=hits: total records in the layer, before any record filter."""
+    q = {"SERVICE": "WFS", "VERSION": "2.0.0", "REQUEST": "GetFeature", "TYPENAMES": layer, "RESULTTYPE": "hits"}
+    r = _get(session, f"{endpoint}?{urlencode(q)}", wfs_params["timeout_s"], wfs_params["retries"])
+    meta = _save(raw_dir / "hits.xml", r)
+    m = re.search(rb'numberMatched="(\d+)"', r.content)
+    return meta, int(m.group(1)) if m else None
+
+
 def fetch_layer(session, source: dict, raw_dir: Path, wfs_params: dict) -> dict:
     """Page through GetFeature until a page returns fewer than page_size features.
 
+    A source may set its own `page_size` (e.g. a layer the server cannot page) and a
+    `record_filter`, sent to the server as an OGC filter.
+
     Returns {"pages": [...], "features": [...], "declared_crs": str|None, "number_matched": int|None}.
     """
-    page_size = wfs_params["page_size"]
+    page_size = source.get("page_size") or wfs_params["page_size"]
+    flt = fes_filter(source.get("record_filter"))
     features: list[dict] = []
     pages: list[dict] = []
     declared_crs = None
@@ -90,6 +116,8 @@ def fetch_layer(session, source: dict, raw_dir: Path, wfs_params: dict) -> dict:
         }
         if source.get("sort_by"):
             q["SORTBY"] = source["sort_by"]
+        if flt:
+            q["FILTER"] = flt
         r = _get(session, f"{source['endpoint_url']}?{urlencode(q)}", wfs_params["timeout_s"], wfs_params["retries"])
         meta = _save(raw_dir / f"page_{n:04d}.json", r)
         if r.status_code != 200:
