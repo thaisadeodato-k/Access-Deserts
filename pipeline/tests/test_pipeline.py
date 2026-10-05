@@ -282,3 +282,21 @@ def test_end_to_end_two_runs(tmp_path):
     assert q2["sources"][0]["layer_check"]["layer_in_capabilities"] is True
     assert read_index(data / "runs")["latest"]["sp"] == rid2
     assert (tmp_path / "cache" / "raw" / rid1 / "s1" / "page_0000.json").exists()
+
+
+# ---- inventory -----------------------------------------------------------------------------
+
+def test_inventory_sort_field_candidates_only_confirmed_identifiers():
+    from pipeline.access_deserts.inventory import sort_field_candidates
+    fields = [{"name": "cd_identificador_ponto_onibus", "type": "xsd:int"}, {"name": "nm_ponto", "type": "xsd:string"},
+              {"name": "cd_identificador", "type": "xsd:string"}]
+    assert sort_field_candidates("geoportal:ponto_onibus", fields) == ["cd_identificador_ponto_onibus"]
+    assert sort_field_candidates("geoportal:other", fields) == []
+
+
+def test_inventory_field_profile():
+    from pipeline.access_deserts.inventory import field_profile
+    fs = [feat(0, tipo="A"), feat(1, tipo="A"), feat(2, tipo=" ")]
+    p = {x["field"]: x for x in field_profile(fs, [{"name": "tipo", "type": "xsd:string"}, {"name": "g", "type": "gml:Point"}])}
+    assert list(p) == ["tipo"]
+    assert p["tipo"]["pct_empty"] == 33.33 and p["tipo"]["values"] == [{"value": "A", "count": 2}]

@@ -1,0 +1,31 @@
+# Candidate layers found by discovery. Inventoried only (pipeline.access_deserts.inventory);
+# never used by the pipeline. A candidate becomes a source only after the author approves it
+# and it is added to sources.yaml.
+#
+# Transit candidates: GeoSampa WFS GetCapabilities search on 2026-10-05 (ponto, parada, onibus,
+# terminal, trem, cptm, estacao). Feature counts are the RESULTTYPE=hits values on that date.
+
+defaults:
+  city_code: sp
+  endpoint_url: http://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs
+  protocol: wfs
+
+candidates:
+  - layer: geoportal:ponto_onibus
+    purpose: transit (bus stops)
+    features_at_discovery: 22570
+  - layer: geoportal:terminal_onibus
+    purpose: transit (bus terminals)
+    features_at_discovery: 50
+  - layer: geoportal:estacao_trem
+    purpose: transit (CPTM train stations)
+    features_at_discovery: 109
+  - layer: geoportal:pde_transporte_estacao_terminal
+    purpose: transit (stations and terminals, PDE Map 9)
+    features_at_discovery: 900
+
+  # Possible CRAS locations: geoportal:centro_referencia_assistencia_social holds 58 polygons
+  # (CRAS coverage areas, qt_area_abrangencia_centro), not facility points (inventory 2026-10-05).
+  - layer: geoportal:equipamento_assistencia_social
+    purpose: social assistance facilities (possible CRAS locations)
+    features_at_discovery: null
