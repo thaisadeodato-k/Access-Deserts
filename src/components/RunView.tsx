@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { SiteShell, Placeholder } from "@/components/SiteShell";
 import { ServiceMap } from "@/components/ServiceMap";
+import { NO_ESTIMATE, SEQUENTIAL, choropleths, type Choropleth } from "@/lib/choropleth";
 import { CATEGORY_LABEL, CATEGORY_ORDER, CONTEXT_STYLE, categoryColor } from "@/lib/categories";
 import {
   fetchRunData,
@@ -115,6 +116,9 @@ function RunLoaded({ data, label }: { data: RunData; label: string }) {
     contextIds.filter((id) => id !== "sp_geosampa_corredor_onibus"),
   );
   const [showExcluded, setShowExcluded] = useState(true);
+  const areaLayers = useMemo(() => choropleths(data.hexagons), [data]);
+  const [areaLayerId, setAreaLayerId] = useState<string>("none");
+  const areaLayer = areaLayers.find((c) => c.id === areaLayerId) ?? null;
   const toggleIn = (set: typeof setVisible) => (id: string, on: boolean) =>
     set((v) => (on ? [...v, id] : v.filter((x) => x !== id)));
 
@@ -130,6 +134,8 @@ function RunLoaded({ data, label }: { data: RunData; label: string }) {
           <ServiceMap
             services={services}
             boundary={data.boundary}
+            hexagons={data.hexagons}
+            choropleth={areaLayer}
             context={data.context}
             sourceNames={sourceNames}
             visibleSources={visible}
@@ -206,6 +212,14 @@ function RunLoaded({ data, label }: { data: RunData; label: string }) {
                 ))}
               </ul>
             </div>
+          )}
+          {areaLayers.length > 0 && (
+            <AreaLayerPicker
+              layers={areaLayers}
+              value={areaLayerId}
+              onChange={setAreaLayerId}
+              selected={areaLayer}
+            />
           )}
           <Legend />
           <p className="text-xs text-muted-foreground">
@@ -313,6 +327,66 @@ function FragmentRow({ term, value }: { term: string; value: ReactNode }) {
       <dt className="text-muted-foreground">{term}</dt>
       <dd>{value}</dd>
     </>
+  );
+}
+
+function AreaLayerPicker({
+  layers,
+  value,
+  onChange,
+  selected,
+}: {
+  layers: Choropleth[];
+  value: string;
+  onChange: (id: string) => void;
+  selected: Choropleth | null;
+}) {
+  return (
+    <fieldset>
+      <legend className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        Area layer (H3 hexagons)
+      </legend>
+      <div className="mt-1 space-y-1">
+        {[{ id: "none", label: "None" }, ...layers].map((l) => (
+          <label key={l.id} className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="area-layer"
+              value={l.id}
+              checked={value === l.id}
+              onChange={() => onChange(l.id)}
+              className="h-4 w-4 accent-foreground"
+            />
+            {l.label}
+          </label>
+        ))}
+      </div>
+      {selected && (
+        <div className="mt-2 space-y-1 text-xs">
+          <ul className="space-y-0.5">
+            {selected.classLabels.map((c, i) => (
+              <li key={c} className="flex items-center gap-2">
+                <span
+                  aria-hidden="true"
+                  className="inline-block h-3 w-4 border border-border"
+                  style={{ backgroundColor: SEQUENTIAL[i] }}
+                />
+                {c}
+              </li>
+            ))}
+            <li className="flex items-center gap-2">
+              <span
+                aria-hidden="true"
+                className="inline-block h-3 w-4 border border-border"
+                style={{ backgroundColor: NO_ESTIMATE }}
+              />
+              No estimate
+            </li>
+          </ul>
+          <p className="text-muted-foreground">{selected.note}</p>
+        </div>
+      )}
+    </fieldset>
   );
 }
 

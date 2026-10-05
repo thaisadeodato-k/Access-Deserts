@@ -10,7 +10,8 @@ import type {
 // pre-bundles the package. Vite bundles the worker separately and we hand maplibre its URL.
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import { CATEGORY_COLOR, CONTEXT_STYLE, OTHER_COLOR, SUBCATEGORY_LABEL } from "@/lib/categories";
-import type { GeoCollection, ServiceProperties, Services } from "@/lib/runs";
+import { NO_ESTIMATE, SEQUENTIAL, type Choropleth } from "@/lib/choropleth";
+import type { GeoCollection, HexagonProperties, ServiceProperties, Services } from "@/lib/runs";
 
 // Free CARTO Positron basemap (no API key). Its attribution is carried by the style.
 const BASEMAP_STYLE = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
@@ -23,6 +24,67 @@ const POLY_OUTLINE_EXCLUDED = "services-poly-outline-excluded";
 const POINT_INCLUDED = "services-point-included";
 const POINT_EXCLUDED = "services-point-excluded";
 const CLICKABLE = [POINT_INCLUDED, POINT_EXCLUDED, POLY_INCLUDED, POLY_EXCLUDED];
+const HEXAGONS = "hexagons";
+const HEX_FILL = "hexagons-fill";
+
+/** Fill colour for an area layer: transparent without population, grey without an estimate. */
+function choroplethColor(c: Choropleth): ExpressionSpecification {
+  const steps: unknown[] = [SEQUENTIAL[0]];
+  c.breaks.forEach((b, i) => steps.push(b, SEQUENTIAL[i + 1]));
+  const value: unknown = [
+    "case",
+    ["==", ["typeof", ["get", c.field]], "number"],
+    ["step", ["get", c.field], ...steps],
+    NO_ESTIMATE,
+  ];
+  const withCoverage: unknown = c.minCoverage
+    ? [
+        "case",
+        ["<", ["coalesce", ["get", c.minCoverage.field], 0], c.minCoverage.value],
+        NO_ESTIMATE,
+        value,
+      ]
+    : value;
+  return [
+    "case",
+    ["<=", ["get", "population_est"], 0],
+    "rgba(0,0,0,0)",
+    withCoverage,
+  ] as unknown as ExpressionSpecification;
+}
+
+function hexPopup(p: HexagonProperties): HTMLElement {
+  const el = document.createElement("div");
+  el.className = "space-y-1 text-xs";
+  const add = (text: string, className = "") => {
+    const n = document.createElement("p");
+    n.textContent = text;
+    if (className) n.className = className;
+    el.appendChild(n);
+  };
+  const n0 = (v: number | null) =>
+    v == null ? "no estimate" : Math.round(v).toLocaleString("en-GB");
+  add("Hexagon (H3, resolution 8)", "font-semibold text-sm");
+  add(
+    `Population: ${p.population_est < 10 ? p.population_est.toFixed(1) : n0(p.population_est)} · ${n0(p.pop_density_km2)} per km²`,
+  );
+  add(
+    `Household-head income (mean): ${p.income_est == null ? "no estimate" : `R$ ${n0(p.income_est)}`}`,
+  );
+  add(
+    `Population in tracts with published income: ${p.income_coverage == null ? "–" : `${Math.round(100 * p.income_coverage)}%`}`,
+  );
+  add(`Vulnerability (income): ${p.vulnerability_score ?? "no estimate"}`);
+  add(
+    `IPVS 2022 (SEADE), comparison: ${p.comparison_mean ?? "–"}` +
+      (p.comparison_coverage != null
+        ? ` (${Math.round(100 * p.comparison_coverage)}% of population classified)`
+        : ""),
+    "text-muted-foreground",
+  );
+  add(p.h3_id, "font-mono text-[10px] text-muted-foreground");
+  return el;
+}
 
 type GeoData = Parameters<GeoJSONSource["setData"]>[0];
 
@@ -99,6 +161,8 @@ function bbox(
 export function ServiceMap({
   services,
   boundary,
+  hexagons,
+  choropleth,
   context,
   sourceNames,
   visibleSources,
@@ -108,6 +172,8 @@ export function ServiceMap({
 }: {
   services: Services;
   boundary: GeoCollection | null;
+  hexagons: GeoCollection | null;
+  choropleth: Choropleth | null;
   context: Record<string, GeoCollection>;
   sourceNames: Record<string, string>;
   visibleSources: string[];
@@ -140,6 +206,32 @@ export function ServiceMap({
         m.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
         m.addControl(new maplibregl.ScaleControl({ unit: "metric" }), "bottom-left");
         m.on("load", () => {
+          // Area layer (hexagons) first, so context lines and services are drawn above it.
+          m.addSource(HEXAGONS, {
+            type: "geojson",
+            data: { type: "FeatureCollection", features: [] },
+          });
+          m.addLayer({
+            id: HEX_FILL,
+            type: "fill",
+            source: HEXAGONS,
+            layout: { visibility: "none" },
+            paint: {
+              "fill-color": NO_ESTIMATE,
+              "fill-opacity": 0.7,
+              "fill-outline-color": "rgba(255,255,255,0.4)",
+            },
+          });
+          m.on("click", HEX_FILL, (e: MapLayerMouseEvent) => {
+            // A click on a service opens the service popup instead.
+            if (m.queryRenderedFeatures(e.point, { layers: CLICKABLE }).length) return;
+            const f = e.features?.[0];
+            if (!f) return;
+            new maplibregl.Popup({ maxWidth: "300px" })
+              .setLngLat(e.lngLat)
+              .setDOMContent(hexPopup(f.properties as unknown as HexagonProperties))
+              .addTo(m);
+          });
           m.addSource(SERVICES, {
             type: "geojson",
             data: { type: "FeatureCollection", features: [] },
@@ -263,6 +355,21 @@ export function ServiceMap({
         { padding: 30, duration: 0 },
       );
   }, [ready, services, boundary, context]);
+
+  // Area layer: data and colours.
+  useEffect(() => {
+    const m = map.current;
+    if (!ready || !m) return;
+    (m.getSource(HEXAGONS) as GeoJSONSource).setData(
+      (hexagons ?? { type: "FeatureCollection", features: [] }) as unknown as GeoData,
+    );
+  }, [ready, hexagons]);
+  useEffect(() => {
+    const m = map.current;
+    if (!ready || !m) return;
+    m.setLayoutProperty(HEX_FILL, "visibility", choropleth ? "visible" : "none");
+    if (choropleth) m.setPaintProperty(HEX_FILL, "fill-color", choroplethColor(choropleth));
+  }, [ready, choropleth]);
 
   // Visibility: which sources and context layers, and whether excluded records are drawn.
   useEffect(() => {

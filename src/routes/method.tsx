@@ -36,11 +36,21 @@ const SECTIONS = [
       "[TO BE COMPLETED: counts per rule from quality.json]",
     ],
   },
+  {
+    title: "Population, income and vulnerability",
+    body: [
+      "Population (IBGE Census 2022, total persons per census tract) and income are moved from census tracts to H3 hexagons (resolution 8) in proportion to area. Tract boundaries come from GeoSampa; every run checks that GeoSampa's tract population equals IBGE's.",
+      'Income is the mean monthly income of household heads (IBGE variable V06004), averaged over the tracts in each hexagon and weighted by the number of household heads. Values that IBGE suppresses ("X") or leaves blank (".") are treated as missing, never as zero. A hexagon gets no income estimate when less than 50% of its population lives in tracts with published income.',
+      "The vulnerability score is 1 minus the percentile rank of hexagon income among populated hexagons with an income estimate: 1 is the lowest income, 0 the highest.",
+      "Census income is the primary vulnerability measure instead of the Índice Paulista de Vulnerabilidade Social (IPVS 2022, Fundação SEADE) because the Census covers every Brazilian municipality, so the method can be applied to other cities, while IPVS covers only São Paulo state and leaves 1,426 tracts of the city unclassified. IPVS 2022 is shown as a labelled comparison layer, with the correlation between the two reported in the run data.",
+    ],
+  },
   { title: "Parameters", body: ["[TO BE COMPLETED: filled automatically from run.json]"] },
   {
     title: "Limitations",
     body: [
       "Edge effect: GeoSampa only covers services inside São Paulo. Areas near the municipal border may appear less served than they are, because nearby services in neighbouring municipalities are missing. The few records outside the boundary that GeoSampa does include (mainly train stations and bus terminals) are kept.",
+      "Income bias: IBGE's mean income (V06004) only covers household heads who have an income. Heads without income are left out, so the mean overstates income where many heads have none, typically in the poorest tracts. The number of heads with income is not published by tract, so the mean cannot be corrected.",
       "Area-weighted interpolation: population and income are moved from census tracts to hexagons in proportion to area, which assumes people are spread evenly within each tract. Large tracts that are partly uninhabited (for example reservoirs and protected areas in the far south) spread their population over empty land. Dasymetric interpolation, using land-use data to place people only where they live, is possible future work.",
       "[TO BE COMPLETED]",
     ],

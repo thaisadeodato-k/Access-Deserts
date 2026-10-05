@@ -63,11 +63,35 @@ export type QualitySource = {
   confidence: string | null;
 };
 
+export type DemandSummary = {
+  method?: Record<string, unknown>;
+  hexagons?: number;
+  hexagons_populated?: number;
+  hexagons_scored?: number;
+  comparison?: { hexagons_compared: number; spearman_rho: number | null } | null;
+  error?: string;
+};
+
 export type Quality = {
   run_id: string;
   city_code: string;
   generated_at: string;
   sources: QualitySource[];
+  /** Phase 5 onwards. */
+  demand?: DemandSummary | null;
+};
+
+export type HexagonProperties = {
+  h3_id: string;
+  population_est: number;
+  households_est: number;
+  pop_density_km2: number | null;
+  income_est: number | null;
+  income_coverage: number | null;
+  vulnerability_score: number | null;
+  comparison_mean: number | null;
+  comparison_vulnerable_share: number | null;
+  comparison_coverage: number | null;
 };
 
 export type ServiceProperties = {
@@ -113,6 +137,8 @@ export type RunData = {
   /** Services already in memory, keyed by source_id (runs with a single services.geojson). */
   preloaded: Record<string, Services>;
   boundary: GeoCollection | null;
+  /** H3 hexagons with demand estimates (Phase 5 onwards). */
+  hexagons: GeoCollection | null;
   /** Context layers keyed by source_id. */
   context: Record<string, GeoCollection>;
 };
@@ -184,16 +210,19 @@ export async function fetchRunData(entry: RunIndexEntry): Promise<RunData> {
       }).features.push(f);
   }
   const contextFiles = outputs.filter((o) => o.startsWith("context/") && o.endsWith(".geojson"));
-  const [boundary, ...contextData] = await Promise.all([
+  const [boundary, hexagons, ...contextData] = await Promise.all([
     outputs.includes("boundary.geojson")
       ? fetchJson<GeoCollection>(`${entry.path}boundary.geojson`)
+      : Promise.resolve(null),
+    outputs.includes("hexagons.geojson")
+      ? fetchJson<GeoCollection>(`${entry.path}hexagons.geojson`)
       : Promise.resolve(null),
     ...contextFiles.map((o) => fetchJson<GeoCollection>(`${entry.path}${o}`)),
   ]);
   const context = Object.fromEntries(
     contextFiles.map((o, i) => [o.slice("context/".length, -".geojson".length), contextData[i]!]),
   );
-  return { entry, run, quality, serviceFiles, preloaded, boundary, context };
+  return { entry, run, quality, serviceFiles, preloaded, boundary, hexagons, context };
 }
 
 export function fetchServiceFile(entry: RunIndexEntry, file: string): Promise<Services> {
