@@ -51,6 +51,8 @@ export type QualitySource = {
   pct_missing_coordinates: number | null;
   role?: string;
   category?: string | null;
+  /** From sources.yaml map_initially_hidden; heavy layers load only when switched on. */
+  map_initially_visible?: boolean;
   findings: QualityFinding[];
   inclusion: {
     included_in_metrics: number;
@@ -102,7 +104,10 @@ export type RunData = {
   entry: RunIndexEntry;
   run: RunInfo;
   quality: Quality;
-  services: Services;
+  /** Service file per source_id (relative to the run folder), loaded on demand. */
+  serviceFiles: Record<string, string>;
+  /** Services already in memory, keyed by source_id (runs with a single services.geojson). */
+  preloaded: Record<string, Services>;
   boundary: GeoCollection | null;
   /** Context layers keyed by source_id. */
   context: Record<string, GeoCollection>;
@@ -151,13 +156,29 @@ export function fetchRunIndex(): Promise<RunIndex> {
   return fetchJson<RunIndex>("runs/index.json");
 }
 
+/** Run metadata, quality, boundary and context. Service records are loaded per source with
+ * fetchServiceFile, so dense layers (bus stops, squares) load only when shown. */
 export async function fetchRunData(entry: RunIndexEntry): Promise<RunData> {
-  const [run, quality, services] = await Promise.all([
+  const [run, quality] = await Promise.all([
     fetchJson<RunInfo>(`${entry.path}run.json`),
     fetchJson<Quality>(`${entry.path}quality.json`),
-    fetchJson<Services>(`${entry.path}services.geojson`),
   ]);
   const outputs = run.outputs ?? [];
+  const serviceFiles = Object.fromEntries(
+    outputs
+      .filter((o) => o.startsWith("services/") && o.endsWith(".geojson"))
+      .map((o) => [o.slice("services/".length, -".geojson".length), o]),
+  );
+  // Runs before Phase 4 have one services.geojson for all sources.
+  const preloaded: Record<string, Services> = {};
+  if (Object.keys(serviceFiles).length === 0) {
+    const all = await fetchJson<Services>(`${entry.path}services.geojson`);
+    for (const f of all.features)
+      (preloaded[f.properties.source_id] ??= {
+        type: "FeatureCollection",
+        features: [],
+      }).features.push(f);
+  }
   const contextFiles = outputs.filter((o) => o.startsWith("context/") && o.endsWith(".geojson"));
   const [boundary, ...contextData] = await Promise.all([
     outputs.includes("boundary.geojson")
@@ -168,5 +189,9 @@ export async function fetchRunData(entry: RunIndexEntry): Promise<RunData> {
   const context = Object.fromEntries(
     contextFiles.map((o, i) => [o.slice("context/".length, -".geojson".length), contextData[i]!]),
   );
-  return { entry, run, quality, services, boundary, context };
+  return { entry, run, quality, serviceFiles, preloaded, boundary, context };
+}
+
+export function fetchServiceFile(entry: RunIndexEntry, file: string): Promise<Services> {
+  return fetchJson<Services>(`${entry.path}${file}`);
 }

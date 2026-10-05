@@ -3,7 +3,8 @@
     python -m pipeline.access_deserts.run --city sp
 
 Steps: FETCH -> NORMALISE -> QUALITY for approved sources, then the city boundary.
-Roles (sources.yaml): `service` records go to services.geojson; `context` layers are published
+Roles (sources.yaml): `service` records go to services/{source_id}.geojson (one file per source, so
+the map can load dense layers only when shown); `context` layers are published
 for display under context/{source_id}.geojson; `reference` layers are fetched for checks only.
 Writes public/data/runs/{run_id}/ and updates public/data/runs/index.json.
 Raw responses go to pipeline/cache/raw/{run_id}/ (not committed).
@@ -187,6 +188,7 @@ def run(city_code: str, data_dir: Path, cache_dir: Path, config_dir: Path = cfg.
 
     caps: dict = {}
     all_services, qualities, records, errors = [], [], [], []
+    service_ids: list[str] = []
     context: dict[str, list[dict]] = {}
     by_source: dict[str, list[dict]] = {}
     for source in sources:
@@ -202,6 +204,7 @@ def run(city_code: str, data_dir: Path, cache_dir: Path, config_dir: Path = cfg.
             errors.append({"source_id": source["source_id"], "error": count_error})
         if source["role"] == "service":
             all_services.extend(out)
+            service_ids.append(source["source_id"])
         elif source["role"] == "context":
             context[source["source_id"]] = out
         by_source[source["source_id"]] = features
@@ -236,8 +239,11 @@ def run(city_code: str, data_dir: Path, cache_dir: Path, config_dir: Path = cfg.
     finished_at = now_iso()
     on_actions = os.environ.get("GITHUB_ACTIONS") == "true"
 
-    outputs = ["services.geojson", "quality.json", "run.json"]
-    write_json(run_dir / "services.geojson", {"type": "FeatureCollection", "features": all_services})
+    outputs = ["quality.json", "run.json"]
+    for sid in service_ids:
+        feats = [s for s in all_services if s["properties"]["source_id"] == sid]
+        write_json(run_dir / "services" / f"{sid}.geojson", {"type": "FeatureCollection", "features": feats})
+        outputs.append(f"services/{sid}.geojson")
     write_json(run_dir / "quality.json", {"run_id": run_id, "city_code": city_code, "generated_at": finished_at, "sources": qualities})
     if boundary_geom is not None:
         write_json(run_dir / "boundary.geojson", {"type": "FeatureCollection", "features": [{

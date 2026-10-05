@@ -22,6 +22,8 @@ def _check_options(s: dict) -> None:
         raise ValueError(f"Source {sid}: unknown role '{s['role']}'")
     if "id_field" in s and not (isinstance(s["id_field"], str) and s["id_field"]):
         raise ValueError(f"Source {sid}: id_field must be an attribute name")
+    if "map_initially_hidden" in s and not isinstance(s["map_initially_hidden"], bool):
+        raise ValueError(f"Source {sid}: map_initially_hidden must be true or false")
     if "page_size" in s and not (isinstance(s["page_size"], int) and s["page_size"] > 0):
         raise ValueError(f"Source {sid}: page_size must be a positive integer")
     rf = s.get("record_filter")

@@ -303,6 +303,20 @@ def test_end_to_end_two_runs(tmp_path):
     assert q2["sources"][0]["layer_check"]["layer_in_capabilities"] is True
     assert read_index(data / "runs")["latest"]["sp"] == rid2
     assert (tmp_path / "cache" / "raw" / rid1 / "s1" / "page_0000.json").exists()
+    assert "services/s1.geojson" in r2["outputs"] and not (data / "runs" / rid2 / "services.geojson").exists()
+    s2 = json.loads((data / "runs" / rid2 / "services" / "s1.geojson").read_text(encoding="utf-8"))
+    assert len(s2["features"]) == 4
+
+
+def test_previous_ids_from_a_run_with_a_single_services_file(tmp_path):
+    from pipeline.access_deserts.output import previous_feature_ids, write_json
+    runs = tmp_path / "runs"
+    d = runs / "old"
+    write_json(d / "quality.json", {"sources": [{"source_id": "s1"}]})
+    write_json(d / "services.geojson", {"type": "FeatureCollection", "features": [
+        {"properties": {"id": "s1:a", "source_id": "s1"}}, {"properties": {"id": "s2:b", "source_id": "s2"}}]})
+    update_index(runs, {"run_id": "old", "city_code": "sp", "status": "completed"})
+    assert previous_feature_ids(runs, "sp", "s1") == {"s1:a"}
 
 
 # ---- inventory -----------------------------------------------------------------------------

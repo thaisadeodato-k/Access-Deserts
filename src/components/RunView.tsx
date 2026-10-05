@@ -1,19 +1,27 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { SiteShell, Placeholder } from "@/components/SiteShell";
 import { ServiceMap } from "@/components/ServiceMap";
 import { CATEGORY_LABEL, CATEGORY_ORDER, CONTEXT_STYLE, categoryColor } from "@/lib/categories";
 import {
   fetchRunData,
+  fetchServiceFile,
   formatRunDate,
   type QualitySource,
   type RunData,
   type RunIndexEntry,
+  type ServiceFeature,
+  type Services,
 } from "@/lib/runs";
 
-// Layers with more records than this start hidden (e.g. 22,570 bus stops) to keep the map legible.
+// Heavy layers (sources.yaml map_initially_hidden) start hidden and are downloaded only when
+// switched on. Runs without that flag fall back to a record-count threshold.
 const DENSE_LAYER = 5000;
+
+function startsVisible(s: QualitySource): boolean {
+  return s.map_initially_visible ?? s.record_count <= DENSE_LAYER;
+}
 
 /** Page frame for states without run data (loading, not found, errors). */
 export function RunMessage({ heading, children }: { heading: string; children: ReactNode }) {
@@ -50,10 +58,13 @@ export function RunView({
 
 function RunLoaded({ data, label }: { data: RunData; label: string }) {
   const runDate = formatRunDate(data.run.finished_at);
-  const layers = useMemo(() => {
-    const sourceIds = new Set(data.services.features.map((f) => f.properties.source_id));
-    return data.quality.sources.filter((s) => sourceIds.has(s.source_id));
-  }, [data]);
+  const layers = useMemo(
+    () =>
+      data.quality.sources.filter(
+        (s) => s.source_id in data.serviceFiles || s.source_id in data.preloaded,
+      ),
+    [data],
+  );
   const groups = useMemo(() => {
     const cats = [...new Set(layers.map((s) => s.category ?? "other"))].sort(
       (a, b) =>
@@ -74,8 +85,32 @@ function RunLoaded({ data, label }: { data: RunData; label: string }) {
     [data],
   );
   const [visible, setVisible] = useState<string[]>(() =>
-    layers.filter((s) => s.record_count <= DENSE_LAYER).map((s) => s.source_id),
+    layers.filter(startsVisible).map((s) => s.source_id),
   );
+  // Service files are downloaded the first time their layer is shown, then kept in the cache.
+  const toLoad = visible.filter((id) => data.serviceFiles[id] && !data.preloaded[id]);
+  const loaded = useQueries({
+    queries: toLoad.map((id) => ({
+      queryKey: ["services", data.entry.run_id, id],
+      queryFn: () => fetchServiceFile(data.entry, data.serviceFiles[id]!),
+      staleTime: Infinity,
+    })),
+    combine: (results) => ({
+      byId: Object.fromEntries(
+        results.flatMap((r, i) => (r.data ? [[toLoad[i]!, r.data] as const] : [])),
+      ) as Record<string, Services>,
+      pending: toLoad.filter((_, i) => results[i]?.isPending),
+      failed: toLoad.filter((_, i) => results[i]?.isError),
+    }),
+  });
+  const loadedKey = Object.keys(loaded.byId).sort().join(",");
+  const services = useMemo<Services>(() => {
+    const features: ServiceFeature[] = [];
+    for (const col of [...Object.values(data.preloaded), ...Object.values(loaded.byId)])
+      features.push(...col.features);
+    return { type: "FeatureCollection", features };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadedKey tracks loaded.byId
+  }, [data, loadedKey]);
   const [visibleContext, setVisibleContext] = useState<string[]>(() =>
     contextIds.filter((id) => id !== "sp_geosampa_corredor_onibus"),
   );
@@ -93,7 +128,7 @@ function RunLoaded({ data, label }: { data: RunData; label: string }) {
       <section className="mx-auto grid max-w-7xl gap-4 px-4 py-4 lg:grid-cols-[1fr_360px]">
         <div className="h-[75vh] overflow-hidden rounded border border-border">
           <ServiceMap
-            services={data.services}
+            services={services}
             boundary={data.boundary}
             context={data.context}
             sourceNames={sourceNames}
@@ -122,8 +157,14 @@ function RunLoaded({ data, label }: { data: RunData; label: string }) {
                   <LayerRow
                     key={s.source_id}
                     source={s}
-                    data={data}
                     checked={visible.includes(s.source_id)}
+                    status={
+                      loaded.failed.includes(s.source_id)
+                        ? "could not be loaded"
+                        : loaded.pending.includes(s.source_id)
+                          ? "loading…"
+                          : null
+                    }
                     onChange={(on) => toggleIn(setVisible)(s.source_id, on)}
                   />
                 ))}
@@ -194,18 +235,18 @@ function Swatch({ color, hollow = false }: { color: string; hollow?: boolean }) 
 
 function LayerRow({
   source,
-  data,
   checked,
+  status,
   onChange,
 }: {
   source: QualitySource;
-  data: RunData;
   checked: boolean;
+  status: string | null;
   onChange: (on: boolean) => void;
 }) {
-  const noGeometry = data.services.features.filter(
-    (f) => f.properties.source_id === source.source_id && f.geometry === null,
-  ).length;
+  const noGeometry = Math.round(
+    ((source.pct_missing_coordinates ?? 0) * source.record_count) / 100,
+  );
   const highlighted = source.findings.filter((f) => f.highlight);
   const reasons = Object.entries(source.inclusion.excluded_by_reason ?? {});
   return (
@@ -220,6 +261,7 @@ function LayerRow({
         />
         <label htmlFor={`layer-${source.source_id}`} className="flex-1">
           {source.name}
+          {status && <span className="ml-1 text-xs text-muted-foreground">({status})</span>}
         </label>
         <span className="whitespace-nowrap font-mono text-xs text-muted-foreground">
           {source.inclusion.included_in_metrics.toLocaleString("en-GB")} /{" "}

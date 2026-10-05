@@ -65,5 +65,11 @@ def previous_feature_ids(runs_dir: Path, city_code: str, source_id: str) -> set[
     quality = json.loads((run_dir / "quality.json").read_text(encoding="utf-8"))
     if not any(q["source_id"] == source_id for q in quality["sources"]):
         return None
-    services = json.loads((run_dir / "services.geojson").read_text(encoding="utf-8"))
+    # One file per source since Phase 4; earlier runs have a single services.geojson.
+    path = run_dir / "services" / f"{source_id}.geojson"
+    if not path.exists():
+        path = run_dir / "services.geojson"
+    if not path.exists():
+        return None
+    services = json.loads(path.read_text(encoding="utf-8"))
     return {f["properties"]["id"] for f in services["features"] if f["properties"]["source_id"] == source_id}

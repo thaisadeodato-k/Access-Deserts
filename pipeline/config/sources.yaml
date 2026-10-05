@@ -38,6 +38,7 @@
 #              rule result for ONE record (record id: id_field value, else WFS feature id). Only added
 #              after the author approves it, with the evidence cited. Reported in quality.json
 #              (inclusion.overrides) and on the Method page. Cannot include a record without coordinates.
+#   map_initially_hidden: true for heavy layers (file loaded by the map only when switched on).
 #   highlight_fields: {attribute: label}. The attribute's empty share is reported as a
 #              highlighted finding in quality.json (computed each run).
 
@@ -178,6 +179,7 @@ sources:
     features_at_verification: 3830
     approved: true   # approved 2026-10-05 (Phase 4)
     page_size: 5000  # STARTINDEX > 0 returns empty pages (even with SORTBY); one request returns all
+    map_initially_hidden: true   # ≈ 6 MB of polygons
     field_map:
       name: nome
       address: [endereco1, bairro, cep1]
@@ -304,6 +306,7 @@ sources:
     approved: true   # approved 2026-10-05 (Phase 4, transit)
     sort_by: cd_identificador_ponto_onibus   # no primary key; unique (inventory 2026-10-05)
     id_field: cd_identificador_ponto_onibus  # WFS feature ids are generated per request
+    map_initially_hidden: true   # 22,570 points, ≈ 10 MB
     field_map:
       name: nm_ponto_onibus
       address: tx_endereco_ponto_onibus

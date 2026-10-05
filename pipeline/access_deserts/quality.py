@@ -214,6 +214,7 @@ def source_quality(
         "layer": source["layer"],
         "role": source.get("role"),
         "category": source.get("category"),
+        "map_initially_visible": not source.get("map_initially_hidden", False),
         "layer_check": layer_info,
         "record_filter": record_filter,
         "fetched_at": fetched_at,

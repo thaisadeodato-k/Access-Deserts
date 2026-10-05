@@ -188,6 +188,8 @@ export function ServiceMap({
             type: "circle",
             source: SERVICES,
             filter: isPoint,
+            // Bus stops are dense: draw them under the other categories.
+            layout: { "circle-sort-key": ["match", ["get", "subcategory"], "bus_stop", 0, 1] },
             paint: {
               "circle-radius": ["match", ["get", "subcategory"], "bus_stop", 2.5, 4.5],
               "circle-color": categoryColor,
