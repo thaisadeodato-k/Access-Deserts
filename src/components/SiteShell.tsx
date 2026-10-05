@@ -35,8 +35,7 @@ export function SiteShell({ children, runDate }: { children: ReactNode; runDate?
       <footer className="border-t border-border bg-card">
         <div className="mx-auto max-w-7xl px-4 py-4 text-xs text-muted-foreground">
           Data: GeoSampa – Prefeitura de São Paulo (SMUL/Geoinfo); IBGE – Censo Demográfico 2022; OpenStreetMap
-          contributors (when used). Run date: {runDate ?? "no completed run yet"}.{" "}
-          <Link to="/admin" className="underline">Admin</Link>
+          contributors (when used). Run date: {runDate ?? "no completed run yet"}.
         </div>
       </footer>
     </div>
