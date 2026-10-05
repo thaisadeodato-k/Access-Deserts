@@ -1,11 +1,26 @@
 # Data sources. Only entries with `approved: true` are used by the pipeline.
 #
 # Layer names verified in the public GeoSampa WFS GetCapabilities on 2026-10-05;
-# `features_at_verification` is the RESULTTYPE=hits count on that date.
+# `features_at_verification` is the RESULTTYPE=hits count on that date. Field names below were
+# confirmed by DescribeFeatureType in the layer inventory (pipeline/discovery/inventory-2026-10-05.md).
+#
+# Metrics rule (author, 2026-10-05): only services that are public, free at point of use and
+# currently existing are counted. Every other record stays in services.geojson with
+# included_in_metrics: false and an exclusion_reason.
+#
+# Roles: service (counted per category, written to services.geojson), context (published for
+# display under context/{source_id}.geojson), reference (fetched for checks only), demand (Phase 5).
 #
 # Optional per-source keys:
 #   sort_by:   attribute passed as SORTBY when paging. Needed for layers without a primary key
 #              (the server then rejects STARTINDEX). Must be a field confirmed by DescribeFeatureType.
+#   page_size: COUNT for this source (default: params.yaml wfs.page_size). Used where the server
+#              cannot page at all; a count mismatch is reported as a run error.
+#   id_field:  attribute used as the record id instead of the WFS feature id (for layers whose
+#              feature ids are generated per request, e.g. "*.fid--…").
+#   record_filter: {field, equals}, sent to the server as an OGC filter. The source is only the
+#              matching records (e.g. one class of a multi-service layer). The layer total and the
+#              kept count are reported in quality.json (record_filter).
 #   field_map: maps normalised fields (name, address, type, sphere) to source attributes.
 #              type -> equipment_type, sphere -> administrative_sphere in services.geojson.
 #              Added only after the source's fields have been reviewed and approved; until then
@@ -15,10 +30,14 @@
 #              A record is excluded if it matches any rule with include: false (reasons joined
 #              with "; "). Rules with include: true only document and count an explicit decision.
 #              Match counts per rule are reported in quality.json.
+#   subcategory_rules: list of {field, equals, subcategory}; matching records get that subcategory.
+#   venue_grouping: {fields, reason}. Records with the same normalised value of `fields` (lower
+#              case, punctuation removed) are one venue; one record per venue is counted and the
+#              others are excluded with `reason`. Each record gets a venue_id.
 #   record_overrides: list of {feature_id, include, reason, evidence, approved_on}. Replaces the
-#              rule result for ONE record (WFS feature id). Only added after the author approves it,
-#              with the evidence cited. Reported in quality.json (inclusion.overrides) and on the
-#              Method page. An override cannot include a record without coordinates.
+#              rule result for ONE record (record id: id_field value, else WFS feature id). Only added
+#              after the author approves it, with the evidence cited. Reported in quality.json
+#              (inclusion.overrides) and on the Method page. Cannot include a record without coordinates.
 #   highlight_fields: {attribute: label}. The attribute's empty share is reported as a
 #              highlighted finding in quality.json (computed each run).
 
@@ -31,6 +50,8 @@ defaults:
 
 sources:
   # ---- Services ----------------------------------------------------------------------------
+  # Education layers: nm_esfera_administrativa_equipamento contradicts the type (state schools
+  # "MUNICIPAL", municipal schools and all CEU units "PRIVADA"), so sphere is not mapped.
   - source_id: sp_geosampa_educacao_rede_publica
     name: Public primary and secondary schools
     layer: geoportal:equipamento_educacao_rede_publica
@@ -38,6 +59,13 @@ sources:
     category: school
     subcategory: primary_secondary
     features_at_verification: 1590
+    approved: true   # approved 2026-10-05 (Phase 4)
+    field_map:
+      name: nm_equipamento
+      address: [tx_endereco_equipamento, nm_bairro_equipamento, cd_cep_equipamento]
+      type: nm_tipo_equipamento
+    highlight_fields:
+      tx_horario_funcionamento: Opening hours
 
   - source_id: sp_geosampa_educacao_infantil
     name: Public early-childhood education
@@ -46,6 +74,19 @@ sources:
     category: school
     subcategory: early_childhood
     features_at_verification: 3047
+    approved: true   # approved 2026-10-05 (Phase 4)
+    sort_by: cd_identificador   # no primary key: STARTINDEX needs SORTBY (unique, inventory 2026-10-05)
+    id_field: cd_identificador  # WFS feature ids are generated per request
+    field_map:
+      name: nm_equipamento
+      address: [tx_endereco_equipamento, nm_bairro_equipamento, cd_cep_equipamento]
+      type: nm_tipo_equipamento
+    subcategory_rules:          # partner crèches: included (author decision 2026-10-05)
+      - field: nm_tipo_equipamento
+        equals: CR.P.CONV
+        subcategory: partner_network
+    highlight_fields:
+      tx_horario_funcionamento: Opening hours
 
   - source_id: sp_geosampa_educacao_ceu
     name: CEU (Unified Educational Centres)
@@ -54,6 +95,13 @@ sources:
     category: school
     subcategory: ceu
     features_at_verification: 150
+    approved: true   # approved 2026-10-05 (Phase 4)
+    field_map:
+      name: nm_equipamento
+      address: [tx_endereco_equipamento, nm_bairro_equipamento, cd_cep_equipamento]
+      type: nm_tipo_equipamento
+    highlight_fields:
+      tx_horario_funcionamento: Opening hours
 
   - source_id: sp_geosampa_saude_ubs
     name: Basic health units (UBS / health posts / health centres)
@@ -81,19 +129,28 @@ sources:
         equals: SEM TIPO
         include: false
         reason: missing type, needs review
-    record_overrides: [] # none approved. Proposed (not applied): include the two state-run "SEM TIPO"
-                         # centres (CS Escola Geraldo de Paula Souza, CS Escola Samuel Barnsley Pessoa)
-                         # once external evidence of their type is provided.
+    record_overrides: [] # none (author decision 2026-10-05): the two state-run "SEM TIPO" centres
+                         # stay excluded and are listed as a known limitation in pipeline/findings.md.
     highlight_fields: # reported as highlighted findings in quality.json
       tx_horario_funcionamento: Opening hours
 
+  # CRAS locations: one class of the social assistance facilities layer (approved 2026-10-05).
+  # The layer has no unit-name field: nm_equipamento holds the operator ("PREFEITURA MUNICIPAL DE
+  # SAO PAULO" for all CRAS), so name is not mapped.
   - source_id: sp_geosampa_cras
     name: Social assistance reference centres (CRAS)
-    layer: geoportal:centro_referencia_assistencia_social
+    layer: geoportal:equipamento_assistencia_social
     role: service
     category: cras
     subcategory: null
-    features_at_verification: 58
+    features_at_verification: 54   # records of the CRAS class (layer total 1,336)
+    approved: true
+    record_filter:
+      field: nm_classe_equipamento
+      equals: CENTRO DE REFERÊNCIA DE ASSISTÊNCIA SOCIAL - CRAS
+    field_map:
+      address: [tx_endereco_equipamento, cd_cep_equipamento]
+      type: nm_classe_equipamento
 
   - source_id: sp_geosampa_parque_municipal
     name: Municipal parks
@@ -102,6 +159,15 @@ sources:
     category: park_square
     subcategory: park
     features_at_verification: 280
+    approved: true   # approved 2026-10-05 (Phase 4)
+    field_map:
+      name: nm_parque
+      type: tx_tipo_categoria_parque_unidade_conservacao
+    inclusion_rules:
+      - field: tx_tipo_situacao_projeto
+        equals: Proposto
+        include: false
+        reason: planned, not built
 
   - source_id: sp_geosampa_praca_largo
     name: Squares and plazas
@@ -110,6 +176,12 @@ sources:
     category: park_square
     subcategory: square
     features_at_verification: 3830
+    approved: true   # approved 2026-10-05 (Phase 4)
+    page_size: 5000  # STARTINDEX > 0 returns empty pages (even with SORTBY); one request returns all
+    field_map:
+      name: nome
+      address: [endereco1, bairro, cep1]
+      type: categoria
 
   - source_id: sp_geosampa_bibliotecas
     name: Libraries
@@ -118,6 +190,19 @@ sources:
     category: library
     subcategory: null
     features_at_verification: 192
+    approved: true   # approved 2026-10-05 (Phase 4)
+    field_map:
+      name: nm_equipamento
+      address: [tx_endereco_equipamento, cd_cep_equipamento]
+      type: nm_tipo_equipamento
+      sphere: nm_esfera_administrativa_equipamento
+    inclusion_rules:
+      - field: nm_esfera_administrativa_equipamento
+        equals: Particular
+        include: false
+        reason: private provider
+    highlight_fields:
+      tx_horario_funcionamento: Opening hours
 
   - source_id: sp_geosampa_espacos_culturais
     name: Cultural spaces
@@ -126,6 +211,19 @@ sources:
     category: culture
     subcategory: cultural_space
     features_at_verification: 35
+    approved: true   # approved 2026-10-05 (Phase 4)
+    field_map:
+      name: nm_equipamento
+      address: [tx_endereco_equipamento, cd_cep_equipamento]
+      type: nm_tipo_equipamento
+      sphere: nm_esfera_administrativa_equipamento
+    inclusion_rules:
+      - field: nm_esfera_administrativa_equipamento
+        equals: Particular
+        include: false
+        reason: private provider
+    highlight_fields:
+      tx_horario_funcionamento: Opening hours
 
   - source_id: sp_geosampa_museus
     name: Museums
@@ -134,6 +232,19 @@ sources:
     category: culture
     subcategory: museum
     features_at_verification: 167
+    approved: true   # approved 2026-10-05 (Phase 4)
+    field_map:
+      name: nm_equipamento
+      address: [tx_endereco_equipamento, cd_cep_equipamento]
+      type: nm_tipo_equipamento
+      sphere: nm_esfera_administrativa_equipamento
+    inclusion_rules:
+      - field: nm_esfera_administrativa_equipamento
+        equals: Particular
+        include: false
+        reason: private provider
+    highlight_fields:
+      tx_horario_funcionamento: Opening hours
 
   - source_id: sp_geosampa_teatro_cinema_show
     name: Theatres, cinemas and venues
@@ -141,7 +252,23 @@ sources:
     role: service
     category: culture
     subcategory: theatre_cinema
-    features_at_verification: 410
+    features_at_verification: 410   # one record per room; 107 venues by address (inventory 2026-10-05)
+    approved: true   # approved 2026-10-05 (Phase 4)
+    field_map:
+      name: nm_equipamento
+      address: [tx_endereco_equipamento, cd_cep_equipamento]
+      type: nm_tipo_equipamento
+      sphere: nm_esfera_administrativa_equipamento
+    inclusion_rules:
+      - field: nm_esfera_administrativa_equipamento
+        equals: Particular
+        include: false
+        reason: private provider
+    venue_grouping:  # count venues, not rooms (author decision 2026-10-05)
+      fields: [tx_endereco_equipamento]
+      reason: another room of the same venue (venue counted once)
+    highlight_fields:
+      tx_horario_funcionamento: Opening hours
 
   - source_id: sp_geosampa_estacao_metro
     name: Metro stations
@@ -149,8 +276,55 @@ sources:
     role: service
     category: metro_train
     subcategory: metro
-    features_at_verification: 94
-    notes: CPTM train stations are a separate layer (geoportal:estacao_trem); not yet approved.
+    features_at_verification: 94   # interchange stations appear once per line
+    approved: true   # approved 2026-10-05 (Phase 4)
+    field_map:
+      name: nm_estacao_metro_trem
+      type: nm_linha_metro_trem
+
+  - source_id: sp_geosampa_estacao_trem
+    name: Train stations (CPTM and ViaMobilidade)
+    layer: geoportal:estacao_trem
+    role: service
+    category: metro_train
+    subcategory: train
+    features_at_verification: 109   # interchange stations appear once per line
+    approved: true   # approved 2026-10-05 (Phase 4, transit)
+    field_map:
+      name: nm_estacao_metro_trem
+      type: nm_linha_metro_trem
+
+  - source_id: sp_geosampa_ponto_onibus
+    name: Bus stops
+    layer: geoportal:ponto_onibus
+    role: service
+    category: transit
+    subcategory: bus_stop
+    features_at_verification: 22570
+    approved: true   # approved 2026-10-05 (Phase 4, transit)
+    sort_by: cd_identificador_ponto_onibus   # no primary key; unique (inventory 2026-10-05)
+    id_field: cd_identificador_ponto_onibus  # WFS feature ids are generated per request
+    field_map:
+      name: nm_ponto_onibus
+      address: tx_endereco_ponto_onibus
+
+  - source_id: sp_geosampa_terminal_onibus
+    name: Bus terminals
+    layer: geoportal:terminal_onibus
+    role: service
+    category: transit
+    subcategory: bus_terminal
+    features_at_verification: 50
+    approved: true   # approved 2026-10-05 (Phase 4, transit)
+    field_map:
+      name: nm_terminal
+      address: tx_endereco_terminal
+      type: nm_tipo_terminal
+    inclusion_rules:
+      - field: nm_tipo_terminal
+        equals: RODOVIARIO
+        include: false
+        reason: intercity terminal, not daily access
 
   # ---- Context (never counted as services) ---------------------------------------------------
   - source_id: sp_geosampa_distrito_municipal
@@ -160,26 +334,49 @@ sources:
     category: null
     subcategory: null
     features_at_verification: 96
+    approved: true   # approved 2026-10-05 (Phase 4); its union is the city boundary
+    field_map:
+      name: nm_distrito_municipal
 
   - source_id: sp_geosampa_area_contexto
-    name: Municipalities of São Paulo state (context)
+    name: São Paulo municipality (area_contexto feature 27, boundary check)
     layer: geoportal:area_contexto
-    role: context
+    role: reference
     category: null
     subcategory: null
-    features_at_verification: 1359
-    sort_by: cd_identificador_area_contexto
-    notes: >-
-      Not the city boundary: all municipalities of the state plus ocean and RMSP features.
-      São Paulo appears twice (ids 27 and 10027). Boundary choice pending (Phase 4).
+    features_at_verification: 1359   # whole layer: all municipalities of the state (86 MB)
+    approved: true   # approved 2026-10-05 (Phase 4): only the São Paulo feature is fetched
+    sort_by: cd_identificador_area_contexto   # no primary key: STARTINDEX needs SORTBY
+    id_field: cd_identificador_area_contexto  # WFS feature ids are generated per request
+    record_filter:
+      field: cd_identificador_area_contexto
+      equals: 27
 
   - source_id: sp_geosampa_corredor_onibus
-    name: Bus corridors (display only)
+    name: Bus corridors in operation (display only)
     layer: geoportal:corredor_onibus
     role: context
     category: null
     subcategory: null
     features_at_verification: 45
+    approved: true   # approved 2026-10-05 (Phase 4): display only "Em Operação"
+    record_filter:
+      field: dc_tipo_status_corredor_onibus
+      equals: Em Operação
+    field_map:
+      name: nm_corredor
+      type: nm_origem
+
+  - source_id: sp_geosampa_cras_coverage
+    name: CRAS coverage areas (not facility locations)
+    layer: geoportal:centro_referencia_assistencia_social
+    role: context
+    category: null
+    subcategory: null
+    features_at_verification: 58
+    notes: >-
+      58 polygons of CRAS coverage areas (qt_area_abrangencia_centro), not service locations
+      (inventory 2026-10-05). Was configured as the CRAS service source until then. Not approved.
 
   # ---- Demand --------------------------------------------------------------------------------
   - source_id: sp_geosampa_densidade_demografica

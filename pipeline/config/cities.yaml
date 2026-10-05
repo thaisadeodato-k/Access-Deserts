@@ -14,9 +14,14 @@ sp:
   # It is NOT the city boundary and is not used for the "% outside boundary" metric.
   wgs84_envelope: [-46.8346, -24.0123, -46.3636, -23.3538]   # [min_lon, min_lat, max_lon, max_lat]
 
-  # City boundary for "% outside boundary": not decided yet (Phase 4).
-  # geoportal:area_contexto holds all municipalities of the state (two "São Paulo" features: 27 and 10027).
-  boundary: null
+  # City boundary (decided 2026-10-05): union of the 96 district polygons. Checked every run
+  # against geoportal:area_contexto feature 27 "São Paulo" (fetched alone via record_filter);
+  # area, area difference and symmetric difference go to run.json. area_contexto also holds a
+  # second "SÃO PAULO" feature (10027, 1,527.5 km²), not used.
+  boundary:
+    method: union
+    source_id: sp_geosampa_distrito_municipal
+    check_against: sp_geosampa_area_contexto
 
   # Only these hosts may be requested. Hostnames matching internal_host_pattern are never
   # requested; when found in metadata or data they are logged as a quality issue.
