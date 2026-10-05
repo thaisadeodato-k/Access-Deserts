@@ -108,12 +108,48 @@ def test_crs_unknown_raises():
 
 # ---- normalise and quality -----------------------------------------------------------------
 
-def test_normalise_without_field_map_leaves_name_null_and_drops_missing_geometry():
+RULES = [
+    {"field": "esfera", "equals": "Estadual", "include": True, "reason": "state-run (public service)"},
+    {"field": "esfera", "equals": "Privado", "include": False, "reason": "private provider"},
+    {"field": "tipo", "equals": "SEM TIPO", "include": False, "reason": "missing type, needs review"},
+]
+
+
+def test_normalise_without_field_map_keeps_every_record():
     out = normalise_services([feat(0), feat(1, coords=None)], SOURCE)
-    assert len(out) == 1
-    p = out[0]["properties"]
-    assert p == {"id": "s1:test.0", "source_id": "s1", "name": None, "category": "health_ubs", "subcategory": None,
-                 "geometry_type": "Point", "address": None}
+    assert out[0]["properties"] == {"id": "s1:test.0", "source_id": "s1", "name": None, "category": "health_ubs",
+                                    "subcategory": None, "geometry_type": "Point", "address": None,
+                                    "included_in_metrics": True, "exclusion_reason": None}
+    assert out[1]["geometry"] is None
+    assert out[1]["properties"]["included_in_metrics"] is False
+    assert out[1]["properties"]["exclusion_reason"] == "missing coordinates"
+
+
+def test_inclusion_rules():
+    src = {**SOURCE, "inclusion_rules": RULES}
+    fs = [feat(0, esfera="Municipal"), feat(1, esfera="Estadual"), feat(2, esfera="Privado"),
+          feat(3, tipo="SEM TIPO"), feat(4, esfera="Privado", tipo="SEM TIPO")]
+    p = [f["properties"] for f in normalise_services(fs, src)]
+    assert [x["included_in_metrics"] for x in p] == [True, True, False, False, False]
+    assert p[2]["exclusion_reason"] == "private provider"
+    assert p[4]["exclusion_reason"] == "private provider; missing type, needs review"
+    q = source_quality(src, fs, set(), "t", [], r"\.prodam$", 0.2, None)["inclusion"]
+    assert (q["included_in_metrics"], q["excluded_from_metrics"]) == (2, 3)
+    assert [r["matched"] for r in q["rules"]] == [1, 2, 2, 0]
+
+
+def test_bad_inclusion_rule_is_rejected(tmp_path):
+    (tmp_path / "sources.yaml").write_text(yaml.safe_dump({"sources": [{**SOURCE, "inclusion_rules": [{"field": "x", "equals": 1}]}]}))
+    with pytest.raises(ValueError):
+        cfg.load_sources(tmp_path)
+
+
+def test_highlighted_finding():
+    src = {**SOURCE, "highlight_fields": {"empty": "Opening hours", "absent": "Absent"}}
+    f = source_quality(src, [feat(0), feat(1)], set(), "t", [], r"\.prodam$", 0.2, None)["findings"]
+    assert f[0] == {"highlight": True, "field": "empty", "label": "Opening hours", "pct_empty": 100.0,
+                    "text": "Opening hours (empty) is 100% empty in this run."}
+    assert "not present" in f[1]["text"]
 
 
 def test_normalise_with_field_map():

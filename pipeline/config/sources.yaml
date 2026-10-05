@@ -8,6 +8,13 @@
 #              (the server then rejects STARTINDEX). Must be a field confirmed by DescribeFeatureType.
 #   field_map: maps normalised fields (name, address) to source attributes. Added only after the
 #              source's fields have been reviewed and approved; until then name/address are null.
+#   inclusion_rules: list of {field, equals, include, reason}. Records are never dropped: every
+#              record stays in services.geojson with `included_in_metrics` and `exclusion_reason`.
+#              A record is excluded if it matches any rule with include: false (reasons joined
+#              with "; "). Rules with include: true only document and count an explicit decision.
+#              Match counts per rule are reported in quality.json.
+#   highlight_fields: {attribute: label}. The attribute's empty share is reported as a
+#              highlighted finding in quality.json (computed each run).
 
 defaults:
   city_code: sp
@@ -50,6 +57,24 @@ sources:
     subcategory: null
     features_at_verification: 483
     approved: true   # approved 2026-10-05 (Phase 2)
+    field_map:       # approved 2026-10-05
+      name: nm_equipamento
+      address: [tx_endereco_equipamento, nm_bairro_equipamento, cd_cep_equipamento]
+    inclusion_rules: # approved 2026-10-05; all records stay in services.geojson
+      - field: nm_esfera_administrativa_equipamento
+        equals: Estadual
+        include: true
+        reason: state-run (public service)
+      - field: nm_esfera_administrativa_equipamento
+        equals: Privado
+        include: false
+        reason: private provider
+      - field: nm_tipo_equipamento
+        equals: SEM TIPO
+        include: false
+        reason: missing type, needs review
+    highlight_fields: # reported as highlighted findings in quality.json
+      tx_horario_funcionamento: Opening hours
 
   - source_id: sp_geosampa_cras
     name: Social assistance reference centres (CRAS)

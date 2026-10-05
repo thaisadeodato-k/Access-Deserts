@@ -9,6 +9,7 @@ import re
 from urllib.parse import urlparse
 
 from .adapters.wfs import urls_in
+from .normalise import MISSING_COORDINATES, has_coords, inclusion, matching_rules
 
 
 def _empty(v) -> bool:
@@ -37,8 +38,35 @@ def internal_hosts(urls: list[str], pattern: str) -> list[str]:
     return sorted({h for h in (urlparse(u).hostname for u in urls) if h and rx.search(h)})
 
 
+def inclusion_summary(features: list[dict], rules: list[dict]) -> dict:
+    """Counts per inclusion rule (a record can match several) and overall included/excluded totals."""
+    matched = [0] * len(rules)
+    for f in features:
+        for i in matching_rules(f.get("properties") or {}, rules):
+            matched[i] += 1
+    included = sum(inclusion(f, rules)[0] for f in features)
+    return {
+        "included_in_metrics": included,
+        "excluded_from_metrics": len(features) - included,
+        "rules": [{**r, "matched": matched[i]} for i, r in enumerate(rules)]
+                 + [{"field": "geometry", "equals": None, "include": False, "reason": MISSING_COORDINATES,
+                     "matched": sum(not has_coords(f) for f in features), "built_in": True}],
+    }
+
+
+def highlighted_findings(profile: dict[str, float | None], highlight_fields: dict[str, str]) -> list[dict]:
+    """Findings for configured attributes, computed from this run's data."""
+    out = []
+    for field, label in highlight_fields.items():
+        pct = profile.get(field)
+        text = (f"{label} ({field}): attribute not present in this run's data." if pct is None and field not in profile
+                else f"{label} ({field}) is {pct:g}% empty in this run.")
+        out.append({"highlight": True, "field": field, "label": label, "pct_empty": pct, "text": text})
+    return out
+
+
 def change_vs_previous(current_ids: set[str], previous_ids: set[str] | None) -> dict:
-    """Compares normalised feature ids (records with coordinates) with the previous completed run."""
+    """Compares normalised feature ids with the previous completed run."""
     if previous_ids is None:
         return {"added": None, "removed": None, "note": "No previous completed run with this source."}
     return {"added": len(current_ids - previous_ids), "removed": len(previous_ids - current_ids), "note": None}
@@ -55,7 +83,7 @@ def source_quality(
     previous_ids: set[str] | None,
 ) -> dict:
     n = len(features)
-    missing = sum(1 for f in features if not (f.get("geometry") or {}).get("coordinates"))
+    missing = sum(not has_coords(f) for f in features)
     profile = attribute_profile(features)
     data_urls = urls_in([f.get("properties") for f in features])
     return {
@@ -65,6 +93,8 @@ def source_quality(
         "layer": source["layer"],
         "fetched_at": fetched_at,
         "record_count": n,
+        "findings": highlighted_findings(profile, source.get("highlight_fields") or {}),
+        "inclusion": inclusion_summary(features, source.get("inclusion_rules") or []),
         "change_vs_previous": change_vs_previous(current_ids, previous_ids),
         "pct_missing_coordinates": _pct(missing, n),
         "pct_outside_city_boundary": None,

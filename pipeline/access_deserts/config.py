@@ -38,6 +38,9 @@ def load_sources(config_dir: Path = CONFIG_DIR) -> list[dict]:
             raise ValueError(f"Source {s.get('source_id')} is missing keys: {missing}")
         if s["protocol"] not in PROTOCOLS:
             raise ValueError(f"Source {s['source_id']}: unknown protocol '{s['protocol']}'")
+        for r in s.get("inclusion_rules") or []:
+            if set(r) != {"field", "equals", "include", "reason"} or not isinstance(r["include"], bool):
+                raise ValueError(f"Source {s['source_id']}: inclusion rule must have field, equals, include (bool), reason: {r}")
         if s["source_id"] in seen:
             raise ValueError(f"Duplicate source_id '{s['source_id']}'")
         seen.add(s["source_id"])

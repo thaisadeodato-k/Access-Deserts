@@ -81,10 +81,13 @@ def _process_source(session, source, city, params, raw_root, caps, runs_dir):
         "subcategory": source.get("subcategory"),
         "sort_by": source.get("sort_by"),
         "field_map": source.get("field_map"),
+        "inclusion_rules": source.get("inclusion_rules"),
+        "highlight_fields": source.get("highlight_fields"),
         "fetched_at": fetched_at,
         "number_matched_reported": res["number_matched"],
         "features_returned": len(res["features"]),
         "features_normalised": len(services),
+        "features_included_in_metrics": sum(s["properties"]["included_in_metrics"] for s in services),
         "count_check": (
             "ok" if res["number_matched"] == len(res["features"])
             else f"MISMATCH: server reported {res['number_matched']}, received {len(res['features'])}"
@@ -126,7 +129,7 @@ def run(city_code: str, data_dir: Path, cache_dir: Path, config_dir: Path = cfg.
         qualities.append(quality)
         records.append(record)
         print(f"[{source['source_id']}] {record['features_returned']} features in {len(record['pages'])} page(s); "
-              f"normalised {record['features_normalised']}; CRS: {record['crs']['action']}", flush=True)
+              f"included in metrics {record['features_included_in_metrics']}; CRS: {record['crs']['action']}", flush=True)
 
     if not sources:
         errors.append({"source_id": None, "error": "No approved sources for this city."})
