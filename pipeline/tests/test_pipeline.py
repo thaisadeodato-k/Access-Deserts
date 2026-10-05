@@ -291,6 +291,7 @@ def test_end_to_end_two_runs(tmp_path):
         (conf / name).write_text((cfg.CONFIG_DIR / name).read_text(encoding="utf-8"), encoding="utf-8")
     city = yaml.safe_load((conf / "cities.yaml").read_text(encoding="utf-8"))
     city["sp"]["allowed_hosts"] = ["wfs.example"]
+    city["sp"].pop("demand", None)  # demand has its own test
     (conf / "cities.yaml").write_text(yaml.safe_dump(city, allow_unicode=True), encoding="utf-8")
     (conf / "sources.yaml").write_text(yaml.safe_dump({"sources": [SOURCE]}), encoding="utf-8")
 
@@ -418,6 +419,7 @@ def test_end_to_end_with_context_reference_and_boundary(tmp_path):
     (conf / "params.yaml").write_text((cfg.CONFIG_DIR / "params.yaml").read_text(encoding="utf-8"), encoding="utf-8")
     city = yaml.safe_load((cfg.CONFIG_DIR / "cities.yaml").read_text(encoding="utf-8"))
     city["sp"]["allowed_hosts"] = ["wfs.example"]
+    city["sp"].pop("demand", None)  # demand has its own test
     city["sp"]["boundary"] = {"method": "union", "source_id": "d", "check_against": "m"}
     (conf / "cities.yaml").write_text(yaml.safe_dump(city, allow_unicode=True), encoding="utf-8")
     base = {k: SOURCE[k] for k in ("name", "publisher", "endpoint_url", "protocol", "approved", "city_code")}
@@ -480,3 +482,83 @@ def test_outside_boundary_flag_is_set_on_records():
     services.append({"geometry": None, "properties": {"id": "x", "source_id": "s1"}})
     bnd.outside_records(services, b, proj)
     assert [s["properties"]["outside_boundary"] for s in services] == [False, True, None]
+
+
+# ---- Phase 5: demand ---------------------------------------------------------------------------
+
+def test_census_value_codes_are_never_numbers():
+    from pipeline.access_deserts.adapters.csv_zip import parse_value
+    assert parse_value("2453.03", ".") == (2453.03, "ok")
+    assert parse_value("2,8", ",") == (2.8, "ok")
+    assert parse_value("X") == (None, "suppressed")
+    assert parse_value(".") == (None, "not_available")
+    assert parse_value("") == (None, "empty")
+    assert parse_value("2,8", ".")[1] == "invalid"
+
+
+def test_fetch_csv_zip_filters_city_rows(tmp_path):
+    import io as _io
+    import zipfile as _zip
+    from pipeline.access_deserts.adapters.csv_zip import fetch_csv_zip
+    buf = _io.BytesIO()
+    with _zip.ZipFile(buf, "w") as z:
+        z.writestr("a.csv", '"CD_SETOR";"V1";"V2"\n"355030800001";"10";"X"\n"110001500002";"5";"1"\n')
+
+    class S:
+        def get(self, url, timeout):
+            return FakeResponse(url, buf.getvalue())
+    src = {"endpoint_url": "https://ftp.example/a.zip",
+           "csv": {"member": "a.csv", "encoding": "utf-8", "delimiter": ";", "decimal": ".", "key": "CD_SETOR", "columns": ["V1", "V2"]}}
+    res = fetch_csv_zip(S(), src, tmp_path, "3550308", 5, 1)
+    assert res["rows"] == {"355030800001": {"V1": "10", "V2": "X"}} and res["rows_in_file"] == 2
+    assert (tmp_path / "a.zip").exists() and res["file"]["sha256"]
+
+
+DEMAND_CONF = {
+    "tracts": {"source_id": "t", "code_field": "code", "population_check_field": "pop",
+               "comparison_index": {"field": "ipvs", "label": "IPVS", "vulnerable_from": 4}},
+    "population": {"source_id": "b", "field": "v0001", "households_field": "v0007"},
+    "income": {"source_id": "r", "mean_field": "V06004", "weight_field": "V06001", "median_field": "V06006"},
+}
+
+
+def _tract(code, x0, pop_check, ipvs):
+    return square(x0, -23.60, d=0.02, code=code, pop=pop_check, ipvs=ipvs)
+
+
+def test_demand_tracts_hexagons_income_and_vulnerability():
+    from pipeline.access_deserts import boundary as bnd, demand as dmd
+    proj = bnd.Projector("EPSG:31983")
+    feats = [_tract("A", -46.70, 1000, 1), _tract("B", -46.68, 1000, 6), _tract("C", -46.66, 500, None)]
+    pop = {"A": {"v0001": "1000", "v0007": "300"}, "B": {"v0001": "1000", "v0007": "300"}, "C": {"v0001": "600", "v0007": "200"}}
+    inc = {"A": {"V06001": "300", "V06004": "8000.0", "V06006": "6000"},
+           "B": {"V06001": "300", "V06004": "1500.0", "V06006": "1200"},
+           "C": {"V06001": "200", "V06004": "X", "V06006": "X"}}
+    tracts = dmd.build_tracts(feats, pop, inc, DEMAND_CONF, {"population": ",", "income": "."})
+    assert [t["income_status"] for t in tracts] == ["ok", "ok", "suppressed"]
+    checks = dmd.tract_checks(tracts, pop, inc)
+    assert checks["population_check"]["mismatches"] == 1  # C: 500 vs 600
+    assert checks["income_status"]["suppressed"]["tracts"] == 1
+    boundary = bnd.union_boundary(feats, proj)
+    hexes = dmd.hex_grid(boundary, 8, proj)
+    assert hexes and all(h["native"].intersects(boundary) for h in hexes)
+    dmd.interpolate(tracts, hexes, proj)
+    assert sum(h["sums"]["population"] for h in hexes) == pytest.approx(2600, rel=1e-6)  # nothing lost
+    dmd.finish(hexes, 0.5, 4)
+    scored = dmd.vulnerability(hexes)
+    with_income = [h["props"] for h in hexes if h["props"]["income_est"] is not None]
+    assert scored == len(with_income) > 0
+    assert all(h["props"]["income_est"] is None for h in hexes if (h["props"]["income_coverage"] or 0) < 0.5)
+    poorest = max(with_income, key=lambda p: p["vulnerability_score"])
+    assert poorest["income_est"] == min(p["income_est"] for p in with_income)
+    sens = dmd.sensitivity(hexes, [0.3, 0.5, 0.7])
+    assert [s["hexagons_without_income"] for s in sens] == sorted(s["hexagons_without_income"] for s in sens)
+    cmp_ = dmd.comparison(hexes, 0.5, None, proj)
+    assert cmp_["hexagons_compared"] > 0 and cmp_["spearman_rho"] is not None and cmp_["spearman_rho"] > 0
+
+
+def test_percentile_ranks_and_spearman():
+    from pipeline.access_deserts.demand import percentile_ranks, spearman
+    assert percentile_ranks([10, 20, 20, 40]) == [0.0, 0.5, 0.5, 1.0]
+    assert spearman([1, 2, 3, 4], [10, 20, 30, 40]) == 1.0
+    assert spearman([1, 2, 3, 4], [4, 3, 2, 1]) == -1.0

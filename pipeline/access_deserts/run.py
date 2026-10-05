@@ -12,6 +12,7 @@ Raw responses go to pipeline/cache/raw/{run_id}/ (not committed).
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import os
 import platform
 import subprocess
@@ -24,7 +25,9 @@ import requests
 
 from . import boundary as bnd
 from . import config as cfg
+from . import demand as dmd
 from .adapters import wfs
+from .adapters.csv_zip import fetch_csv_zip, parse_value
 from .crs import ensure_lonlat
 from .derive import derive_names
 from .normalise import clean_placeholders, feature_key, mapped_value, normalise_services
@@ -33,8 +36,8 @@ from .quality import layer_check, source_quality
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 USER_AGENT = "access-deserts-pipeline (+https://github.com/thaisadeodato-k/Access-Deserts)"
-STEPS_EXECUTED = ["fetch", "normalise", "quality", "boundary"]
-STEPS_PENDING = ["classify + deduplicate (Phase 7)", "grid (Phase 5)", "metrics (Phase 6)"]
+STEPS_EXECUTED = ["fetch", "normalise", "quality", "boundary", "grid (demand)"]
+STEPS_PENDING = ["classify + deduplicate (Phase 7)", "metrics (Phase 6)"]
 
 
 def _git_commit() -> str | None:
@@ -77,8 +80,8 @@ def _process_source(session, source, city, params, raw_root, caps, runs_dir):
     """
     if source["protocol"] != "wfs":
         raise NotImplementedError(f"Protocol '{source['protocol']}' is not implemented yet")
-    if source["role"] not in ("service", "context", "reference"):
-        raise NotImplementedError(f"Role '{source['role']}' is not implemented yet (Phase 5)")
+    if source["role"] not in ("service", "context", "reference", "demand"):
+        raise NotImplementedError(f"Role '{source['role']}' is not implemented yet")
 
     endpoint = source["endpoint_url"]
     if endpoint not in caps:
@@ -163,6 +166,85 @@ def _process_source(session, source, city, params, raw_root, caps, runs_dir):
     return records, quality, record, features, count_error
 
 
+def _process_csv(session, source, city, params, raw_root):
+    """FETCH a census CSV (ZIP), keep the city's rows. Returns (quality, run record, rows)."""
+    fetched_at = now_iso()
+    res = fetch_csv_zip(session, source, raw_root / source["source_id"], str(city["ibge_code"]),
+                        params["wfs"]["timeout_s"], params["wfs"]["retries"])
+    statuses = {c: dict(Counter(parse_value(r[c], source["csv"]["decimal"])[1] for r in res["rows"].values()))
+                for c in res["columns"]}
+    quality = {
+        "source_id": source["source_id"], "name": source["name"], "publisher": source["publisher"],
+        "layer": source["layer"], "role": source["role"], "category": None, "fetched_at": fetched_at,
+        "record_count": len(res["rows"]), "rows_in_file": res["rows_in_file"],
+        "filter": f"{source['csv']['key']} starts with {city['ibge_code']}",
+        "value_status": statuses,
+        "value_status_note": "ok = number; suppressed = 'X'; not_available = '.'; both are missing, never zero.",
+    }
+    record = {
+        "source_id": source["source_id"], "layer": source["layer"], "endpoint_url": source["endpoint_url"],
+        "role": source["role"], "protocol": "csv", "csv": source["csv"], "fetched_at": fetched_at,
+        "rows_in_file": res["rows_in_file"], "rows_kept": len(res["rows"]),
+        "features_returned": len(res["rows"]), "features_included_in_metrics": None,
+        "count_check": "not applicable (file download)", "crs": {"action": "not applicable (table)"},
+        "raw_dir": f"{source['source_id']}/", "pages": [res["file"]],
+    }
+    return quality, record, res["rows"]
+
+
+def _demand(city, params, by_source, tables, boundary_geom, proj):
+    """Tracts -> H3 hexagons. Returns (hexagon features, summary for run.json/quality.json)."""
+    conf = city["demand"]
+    need = [conf["tracts"]["source_id"]]
+    missing = [s for s in need if s not in by_source] + [
+        s for s in (conf["population"]["source_id"], conf["income"]["source_id"]) if s not in tables]
+    if missing:
+        raise LookupError(f"Demand sources not available in this run: {missing}")
+    decimals = {"population": conf["population"]["_decimal"], "income": conf["income"]["_decimal"]}
+    pop_rows, inc_rows = tables[conf["population"]["source_id"]], tables[conf["income"]["source_id"]]
+    tracts = dmd.build_tracts(by_source[conf["tracts"]["source_id"]], pop_rows, inc_rows, conf, decimals)
+    checks = dmd.tract_checks(tracts, pop_rows, inc_rows)
+    p = params["demand"]
+    hexes = dmd.hex_grid(boundary_geom, params["h3_resolution"], proj)
+    dmd.interpolate(tracts, hexes, proj)
+    cmp_conf = conf["tracts"].get("comparison_index") or {}
+    dmd.finish(hexes, p["income_coverage_threshold"], cmp_conf.get("vulnerable_from"))
+    scored = dmd.vulnerability(hexes)
+    districts = by_source.get((city.get("boundary") or {}).get("source_id"))
+    district_display = ([{"geometry": f["geometry"], "properties": {"name": (f.get("properties") or {}).get(
+        conf.get("district_name_field", "nm_distrito_municipal"))}} for f in districts] if districts else None)
+    comparison = (dmd.comparison(hexes, p["comparison_min_coverage"], district_display, proj)
+                  if cmp_conf else None)
+    hex_pop = sum(h["props"]["population_est"] for h in hexes)
+    summary = {
+        "method": {
+            "h3_resolution": params["h3_resolution"],
+            "hexagons": "H3 cells intersecting the city boundary",
+            "interpolation": "area-weighted from census tracts (uniform population within each tract)",
+            "population": f"{conf['population']['source_id']}.{conf['population']['field']}",
+            "income": (f"{conf['income']['source_id']}.{conf['income']['mean_field']} (mean income of household heads "
+                       f"with income), weighted by {conf['income']['weight_field']} (all household heads) x area share; "
+                       "suppressed and unavailable values are missing"),
+            "income_bias": ("The mean excludes household heads without income; the number of heads with income is "
+                            "not published by tract, so the mean cannot be adjusted and overstates income where many "
+                            "heads have no income."),
+            "income_coverage_threshold": p["income_coverage_threshold"],
+            "vulnerability_score": "1 - percentile rank of income_est among populated hexagons with income (1 = lowest income)",
+            "comparison_index": cmp_conf.get("label"),
+        },
+        "tracts": checks,
+        "hexagons": len(hexes),
+        "hexagons_populated": sum(h["props"]["population_est"] > 0 for h in hexes),
+        "hexagons_with_income": sum(h["props"]["income_est"] is not None for h in hexes),
+        "hexagons_scored": scored,
+        "population_in_hexagons": round(hex_pop),
+        "population_in_tracts": round(checks["population_total"]),
+        "sensitivity": dmd.sensitivity(hexes, p["sensitivity_thresholds"]),
+        "comparison": comparison,
+    }
+    return [dmd.to_feature(h) for h in hexes], summary
+
+
 def _boundary(city, by_source, proj):
     """Union of the configured boundary source and its consistency check. Returns (geometry, record)."""
     conf = city.get("boundary")
@@ -197,8 +279,21 @@ def run(city_code: str, data_dir: Path, cache_dir: Path, config_dir: Path = cfg.
     service_ids: list[str] = []
     context: dict[str, list[dict]] = {}
     by_source: dict[str, list[dict]] = {}
+    tables: dict[str, dict] = {}
     for source in sources:
         print(f"[{source['source_id']}] fetching {source['layer']} ...", flush=True)
+        if source["protocol"] == "csv":
+            try:
+                quality, record, rows = _process_csv(session, source, city, params, raw_root)
+            except Exception as e:
+                errors.append({"source_id": source["source_id"], "error": f"{type(e).__name__}: {e}", "trace": traceback.format_exc(limit=3)})
+                print(f"[{source['source_id']}] FAILED: {e}", flush=True)
+                continue
+            tables[source["source_id"]] = rows
+            qualities.append(quality)
+            records.append(record)
+            print(f"[{source['source_id']}] {record['rows_kept']} of {record['rows_in_file']} rows kept", flush=True)
+            continue
         try:
             out, quality, record, features, count_error = _process_source(
                 session, source, city, params, raw_root, caps, runs_dir)
@@ -253,6 +348,29 @@ def run(city_code: str, data_dir: Path, cache_dir: Path, config_dir: Path = cfg.
             elif q.get("role") != "service":
                 q["pct_outside_city_boundary_note"] = "Not applicable (not a service layer)."
 
+    hexagons, demand_summary = None, None
+    if city.get("demand"):
+        if boundary_geom is None:
+            demand_summary = {"error": "No city boundary in this run; demand step skipped."}
+            errors.append({"source_id": None, "error": demand_summary["error"]})
+        else:
+            for part in ("population", "income"):
+                sid = city["demand"][part]["source_id"]
+                src = next((s for s in sources if s["source_id"] == sid), None)
+                city["demand"][part]["_decimal"] = (src or {}).get("csv", {}).get("decimal", ".")
+            try:
+                print("[demand] tracts -> hexagons ...", flush=True)
+                hexagons, demand_summary = _demand(city, params, by_source, tables, boundary_geom, proj)
+                print(f"[demand] {demand_summary['hexagons']} hexagons; population {demand_summary['population_in_hexagons']} "
+                      f"(tracts {demand_summary['population_in_tracts']})", flush=True)
+                if demand_summary["tracts"]["population_check"]["mismatches"]:
+                    errors.append({"source_id": city["demand"]["tracts"]["source_id"],
+                                   "error": f"Population check: {demand_summary['tracts']['population_check']['mismatches']} "
+                                            "tracts differ from the reference population"})
+            except Exception as e:
+                demand_summary = {"error": f"{type(e).__name__}: {e}"}
+                errors.append({"source_id": None, "error": f"Demand: {type(e).__name__}: {e}", "trace": traceback.format_exc(limit=3)})
+
     if not sources:
         errors.append({"source_id": None, "error": "No approved sources for this city."})
     status = "failed" if not records else "completed_with_errors" if errors else "completed"
@@ -264,7 +382,11 @@ def run(city_code: str, data_dir: Path, cache_dir: Path, config_dir: Path = cfg.
         feats = [s for s in all_services if s["properties"]["source_id"] == sid]
         write_json(run_dir / "services" / f"{sid}.geojson", {"type": "FeatureCollection", "features": feats})
         outputs.append(f"services/{sid}.geojson")
-    write_json(run_dir / "quality.json", {"run_id": run_id, "city_code": city_code, "generated_at": finished_at, "sources": qualities})
+    write_json(run_dir / "quality.json", {"run_id": run_id, "city_code": city_code, "generated_at": finished_at,
+                                          "sources": qualities, "demand": demand_summary})
+    if hexagons is not None:
+        write_json(run_dir / "hexagons.geojson", {"type": "FeatureCollection", "features": hexagons})
+        outputs.append("hexagons.geojson")
     if boundary_geom is not None:
         write_json(run_dir / "boundary.geojson", {"type": "FeatureCollection", "features": [{
             "type": "Feature", "geometry": proj.to_lonlat(boundary_geom),
@@ -285,6 +407,7 @@ def run(city_code: str, data_dir: Path, cache_dir: Path, config_dir: Path = cfg.
         "parameters": params,
         "steps": {"executed": STEPS_EXECUTED, "pending": STEPS_PENDING},
         "boundary": boundary_record,
+        "demand": demand_summary,
         "polygon_distance": {"method_used": None, "note": "Distances are computed in Phase 6."},
         "capabilities": [{"endpoint_url": ep, **meta, "layers_listed": len(layers)} for ep, (meta, layers) in caps.items()],
         "sources": records,

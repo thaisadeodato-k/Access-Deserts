@@ -6,10 +6,10 @@ boundary line count as inside).
 """
 from __future__ import annotations
 
+import numpy as np
 from pyproj import Transformer
-from shapely import make_valid, union_all
+from shapely import make_valid, transform, union_all
 from shapely.geometry import mapping, shape
-from shapely.ops import transform
 from shapely.prepared import prep
 
 MAX_LISTED_OUTSIDE = 10
@@ -18,14 +18,20 @@ MAX_LISTED_OUTSIDE = 10
 class Projector:
     def __init__(self, native_crs: str):
         self.native_crs = native_crs
-        self._fwd = Transformer.from_crs("EPSG:4326", native_crs, always_xy=True).transform
-        self._back = Transformer.from_crs(native_crs, "EPSG:4326", always_xy=True).transform
+        fwd = Transformer.from_crs("EPSG:4326", native_crs, always_xy=True)
+        back = Transformer.from_crs(native_crs, "EPSG:4326", always_xy=True)
+        # Vectorised: shapely passes all coordinates of a geometry as one (n, 2) array.
+        self._fwd = lambda xy: np.column_stack(fwd.transform(xy[:, 0], xy[:, 1]))
+        self._back = lambda xy: np.column_stack(back.transform(xy[:, 0], xy[:, 1]))
 
     def to_native(self, geojson_geometry: dict):
-        return make_valid(transform(self._fwd, shape(geojson_geometry)))
+        return make_valid(transform(shape(geojson_geometry), self._fwd))
+
+    def to_lonlat_geom(self, geom):
+        return transform(geom, self._back)
 
     def to_lonlat(self, geom) -> dict:
-        return mapping(transform(self._back, geom))
+        return mapping(self.to_lonlat_geom(geom))
 
 
 def union_boundary(features: list[dict], proj: Projector):

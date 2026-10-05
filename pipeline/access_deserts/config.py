@@ -32,6 +32,11 @@ def _check_options(s: dict) -> None:
     for r in s.get("subcategory_rules") or []:
         if set(r) != {"field", "equals", "subcategory"}:
             raise ValueError(f"Source {sid}: subcategory rule must have field, equals, subcategory: {r}")
+    if s["protocol"] == "csv":
+        spec = s.get("csv") or {}
+        keys = {"member", "encoding", "delimiter", "decimal", "key", "columns"}
+        if set(spec) != keys or spec["decimal"] not in (".", ",") or not spec["columns"]:
+            raise ValueError(f"Source {sid}: csv must have {sorted(keys)} (decimal '.' or ','): {spec}")
     pv = s.get("placeholder_values")
     if pv is not None and not (isinstance(pv, dict) and all(isinstance(v, list) and v for v in pv.values())):
         raise ValueError(f"Source {sid}: placeholder_values must map fields to non-empty lists: {pv}")
